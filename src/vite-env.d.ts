@@ -31,6 +31,11 @@ declare global {
       isWindowMaximized: () => Promise<boolean>
       resizeForAuth: () => Promise<void>
       resizeForApp: () => Promise<void>
+
+      // Discord login flow
+      openDiscordLogin: () => Promise<void>
+      closeDiscordLogin: () => Promise<void>
+      extractDiscordToken: () => Promise<string | null>
     }
   }
 }

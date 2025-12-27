@@ -29,4 +29,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   isWindowMaximized: () => ipcRenderer.invoke('window:is-maximized'),
   resizeForAuth: () => ipcRenderer.invoke('window:resize-for-auth'),
   resizeForApp: () => ipcRenderer.invoke('window:resize-for-app'),
+
+  // Discord login flow
+  openDiscordLogin: () => ipcRenderer.invoke('discord-login:open'),
+  closeDiscordLogin: () => ipcRenderer.invoke('discord-login:close'),
+  extractDiscordToken: () => ipcRenderer.invoke('discord-login:extract-token'),
 })

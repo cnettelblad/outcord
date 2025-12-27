@@ -18,6 +18,7 @@ process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL
   : RENDERER_DIST
 
 let win: BrowserWindow | null
+let loginWindow: BrowserWindow | null = null
 
 function createWindow() {
   // Use platform-specific icon during development
@@ -139,6 +140,73 @@ ipcMain.handle('window:resize-for-auth', () => {
 ipcMain.handle('window:resize-for-app', () => {
   win?.setSize(1200, 800)
   win?.center()
+})
+
+// Discord login handlers
+ipcMain.handle('discord-login:open', () => {
+  if (loginWindow) {
+    loginWindow.focus()
+    return
+  }
+
+  loginWindow = new BrowserWindow({
+    width: 500,
+    height: 700,
+    parent: win || undefined,
+    modal: true,
+    webPreferences: {
+      nodeIntegration: false,
+      contextIsolation: true,
+    },
+  })
+
+  loginWindow.loadURL('https://discord.com/login')
+
+  loginWindow.on('closed', () => {
+    loginWindow = null
+  })
+})
+
+ipcMain.handle('discord-login:close', () => {
+  loginWindow?.close()
+  loginWindow = null
+})
+
+ipcMain.handle('discord-login:extract-token', async () => {
+  if (!loginWindow) {
+    return null
+  }
+
+  try {
+    // Execute the token extraction script
+    const token = await loginWindow.webContents.executeJavaScript(`
+      (function() {
+        try {
+          let m;
+          webpackChunkdiscord_app.push([[Math.random()],{},e=>{
+            for(let i in e.c){
+              let x=e.c[i];
+              if(x?.exports?.$8&&x.exports.LP&&x.exports.gK){
+                m=x;
+                break
+              }
+            }
+          }]);
+          if (m && m.exports && m.exports.LP) {
+            return m.exports.LP();
+          }
+          return null;
+        } catch(e) {
+          return null;
+        }
+      })();
+    `)
+
+    return token
+  } catch (error) {
+    console.error('Failed to extract token:', error)
+    return null
+  }
 })
 
 app.on('window-all-closed', () => {
