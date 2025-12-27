@@ -1,0 +1,84 @@
+{
+  "name": "outcord",
+  "version": "0.0.1-alpha",
+  "description": "A tool to help you export important data from Discord",
+  "main": "dist-electron/main.js",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build && electron-builder",
+    "build:dir": "vue-tsc --noEmit && vite build && electron-builder --dir",
+    "preview": "vite preview",
+    "lint": "eslint . --fix",
+    "format": "prettier --write src/",
+    "type-check": "vue-tsc --noEmit"
+  },
+  "keywords": [
+    "discord",
+    "export",
+    "chat-logs",
+    "electron",
+    "vue",
+    "typescript"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@rushstack/eslint-patch": "^1.10.4",
+    "@tailwindcss/vite": "^4.1.18",
+    "@tsconfig/node20": "^20.1.4",
+    "@types/node": "^22.10.2",
+    "@vitejs/plugin-vue": "^5.2.1",
+    "@vue/eslint-config-prettier": "^10.1.0",
+    "@vue/eslint-config-typescript": "^14.1.3",
+    "@vue/tsconfig": "^0.7.0",
+    "autoprefixer": "^10.4.23",
+    "electron": "^33.2.1",
+    "electron-builder": "^25.1.8",
+    "eslint": "^9.16.0",
+    "eslint-plugin-vue": "^9.31.0",
+    "postcss": "^8.5.6",
+    "prettier": "^3.4.2",
+    "tailwindcss": "^4.1.18",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.5",
+    "vite-plugin-electron": "^0.28.8",
+    "vite-plugin-electron-renderer": "^0.14.5",
+    "vue-tsc": "^2.1.10"
+  },
+  "dependencies": {
+    "electron-store": "^11.0.2",
+    "vue": "^3.5.13"
+  },
+  "build": {
+    "appId": "com.outcord.app",
+    "productName": "OutCord",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*"
+    ],
+    "mac": {
+      "category": "public.app-category.utilities",
+      "target": [
+        "dmg",
+        "zip"
+      ]
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "zip"
+      ]
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Utility"
+    }
+  }
+}
