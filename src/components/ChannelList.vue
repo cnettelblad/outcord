@@ -9,20 +9,28 @@ const props = defineProps<{
 }>()
 
 const channelsByCategory = computed(() => {
-  const categories = props.channels.filter((ch) => ch.type === 4)
+  // Sort categories by position
+  const categories = props.channels
+    .filter((ch) => ch.type === 4)
+    .sort((a, b) => a.position - b.position)
+
   const regularChannels = props.channels.filter((ch) => ch.type !== 4)
 
   const grouped = new Map<string, DiscordChannel[]>()
 
-  // Add uncategorized channels
-  const uncategorized = regularChannels.filter((ch) => !ch.parent_id)
+  // Add uncategorized channels (sorted by position)
+  const uncategorized = regularChannels
+    .filter((ch) => !ch.parent_id)
+    .sort((a, b) => a.position - b.position)
   if (uncategorized.length > 0) {
     grouped.set('uncategorized', uncategorized)
   }
 
-  // Group channels by category
+  // Group channels by category and sort by position
   categories.forEach((category) => {
-    const channelsInCategory = regularChannels.filter((ch) => ch.parent_id === category.id)
+    const channelsInCategory = regularChannels
+      .filter((ch) => ch.parent_id === category.id)
+      .sort((a, b) => a.position - b.position)
     if (channelsInCategory.length > 0) {
       grouped.set(category.id, channelsInCategory)
     }
@@ -30,11 +38,6 @@ const channelsByCategory = computed(() => {
 
   return { categories, grouped }
 })
-
-function getCategoryName(categoryId: string): string {
-  const category = channelsByCategory.value.categories.find((cat) => cat.id === categoryId)
-  return category ? category.name : 'Uncategorized'
-}
 
 function getChannelTypeIcon(type: number): string {
   const icons: Record<number, string> = {
@@ -94,9 +97,57 @@ function getChannelTypeIcon(type: number): string {
 
       <!-- Channel Groups -->
       <div class="p-4 space-y-6">
+        <!-- Uncategorized Channels First -->
+        <div v-if="channelsByCategory.grouped.has('uncategorized')" class="space-y-2">
+          <!-- Category Header -->
+          <div class="flex items-center gap-2 px-2 py-1">
+            <svg class="w-4 h-4 text-text-muted" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" />
+            </svg>
+            <h3 class="text-xs font-bold uppercase tracking-wider text-text-muted">
+              Uncategorized
+            </h3>
+          </div>
+
+          <!-- Channels -->
+          <div class="space-y-1">
+            <div
+              v-for="channel in channelsByCategory.grouped.get('uncategorized')"
+              :key="channel.id"
+              class="group flex items-center gap-3 px-3 py-2.5 rounded-lg bg-surface-light/50 hover:bg-surface-lighter transition-all duration-200 cursor-pointer"
+            >
+              <!-- Channel Icon -->
+              <span class="text-lg flex-shrink-0">{{ getChannelTypeIcon(channel.type) }}</span>
+
+              <!-- Channel Name -->
+              <span
+                class="flex-1 font-medium text-text-primary group-hover:text-white transition-colors truncate"
+              >
+                {{ channel.name }}
+              </span>
+
+              <!-- Channel Type Badge -->
+              <span
+                class="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-md bg-background-lighter text-text-muted"
+              >
+                {{ channelTypeToString(channel.type) }}
+              </span>
+
+              <!-- NSFW Badge -->
+              <span
+                v-if="channel.nsfw"
+                class="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-md bg-accent-red text-white"
+              >
+                NSFW
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Categorized Channels (sorted by category position) -->
         <div
-          v-for="[categoryId, channelsInCategory] in channelsByCategory.grouped"
-          :key="categoryId"
+          v-for="category in channelsByCategory.categories"
+          :key="category.id"
           class="space-y-2"
         >
           <!-- Category Header -->
@@ -105,14 +156,14 @@ function getChannelTypeIcon(type: number): string {
               <path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" />
             </svg>
             <h3 class="text-xs font-bold uppercase tracking-wider text-text-muted">
-              {{ getCategoryName(categoryId) }}
+              {{ category.name }}
             </h3>
           </div>
 
           <!-- Channels -->
-          <div class="space-y-1">
+          <div v-if="channelsByCategory.grouped.get(category.id)" class="space-y-1">
             <div
-              v-for="channel in channelsInCategory"
+              v-for="channel in channelsByCategory.grouped.get(category.id)"
               :key="channel.id"
               class="group flex items-center gap-3 px-3 py-2.5 rounded-lg bg-surface-light/50 hover:bg-surface-lighter transition-all duration-200 cursor-pointer"
             >
