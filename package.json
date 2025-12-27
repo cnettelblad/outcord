@@ -53,12 +53,14 @@
   "build": {
     "appId": "com.outcord.app",
     "productName": "OutCord",
+    "icon": "assets/icons/icon",
     "directories": {
       "output": "release"
     },
     "files": [
       "dist/**/*",
-      "dist-electron/**/*"
+      "dist-electron/**/*",
+      "assets/**/*"
     ],
     "mac": {
       "category": "public.app-category.utilities",

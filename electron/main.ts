@@ -20,10 +20,26 @@ process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL
 let win: BrowserWindow | null
 
 function createWindow() {
+  // Use platform-specific icon during development
+  const appRoot = process.env.APP_ROOT || path.join(__dirname, '..')
+  const iconPath =
+    process.platform === 'darwin'
+      ? path.join(appRoot, 'assets/icons/icon.icns')
+      : process.platform === 'win32'
+        ? path.join(appRoot, 'assets/icons/icon.ico')
+        : path.join(appRoot, 'assets/icons/icon.png')
+
   win = new BrowserWindow({
     width: 1200,
     height: 800,
-    icon: path.join(process.env.VITE_PUBLIC, 'icon.png'),
+    minWidth: 800,
+    minHeight: 600,
+    frame: false,
+    titleBarStyle: 'hiddenInset',
+    title: 'OutCord',
+    trafficLightPosition: { x: -100, y: -100 },
+    backgroundColor: '#0B0E11',
+    icon: iconPath,
     webPreferences: {
       preload: path.join(__dirname, 'preload.mjs'),
       contextIsolation: true,
@@ -89,6 +105,27 @@ ipcMain.handle('discord:fetch-channels', async (_event, guildId: string) => {
 // Export handlers
 ipcMain.handle('export:channels', async (_event, data: unknown) => {
   return exportService.exportToJSON(data as Parameters<typeof exportService.exportToJSON>[0])
+})
+
+// Window control handlers
+ipcMain.handle('window:minimize', () => {
+  win?.minimize()
+})
+
+ipcMain.handle('window:maximize', () => {
+  if (win?.isMaximized()) {
+    win.unmaximize()
+  } else {
+    win?.maximize()
+  }
+})
+
+ipcMain.handle('window:close', () => {
+  win?.close()
+})
+
+ipcMain.handle('window:is-maximized', () => {
+  return win?.isMaximized() || false
 })
 
 app.on('window-all-closed', () => {

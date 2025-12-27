@@ -21,4 +21,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   // Export
   exportChannels: (data: unknown) => ipcRenderer.invoke('export:channels', data),
+
+  // Window controls
+  minimizeWindow: () => ipcRenderer.invoke('window:minimize'),
+  maximizeWindow: () => ipcRenderer.invoke('window:maximize'),
+  closeWindow: () => ipcRenderer.invoke('window:close'),
+  isWindowMaximized: () => ipcRenderer.invoke('window:is-maximized'),
 })

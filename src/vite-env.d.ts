@@ -23,6 +23,12 @@ declare global {
 
       // Export
       exportChannels: (data: ExportedChannelData) => Promise<string>
+
+      // Window controls
+      minimizeWindow: () => Promise<void>
+      maximizeWindow: () => Promise<void>
+      closeWindow: () => Promise<void>
+      isWindowMaximized: () => Promise<boolean>
     }
   }
 }

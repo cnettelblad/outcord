@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useDiscord } from './composables/useDiscord'
+import TitleBar from './components/TitleBar.vue'
 import AuthModal from './components/AuthModal.vue'
 import ServerSelector from './components/ServerSelector.vue'
 import ChannelList from './components/ChannelList.vue'
@@ -38,43 +39,36 @@ async function handleExport() {
 
     <!-- Main App -->
     <div v-else class="flex flex-col min-h-screen">
+      <!-- Custom Title Bar (Fixed) -->
+      <div class="fixed top-0 left-0 right-0 z-50">
+        <TitleBar />
+      </div>
+
+      <!-- Spacer for titlebar -->
+      <div class="h-[40px]"></div>
+
       <!-- Header -->
-      <header
-        class="sticky top-0 z-30 bg-surface/80 backdrop-blur-lg border-b border-surface-lighter shadow-elevation-1"
-      >
-        <div class="max-w-7xl mx-auto px-6 py-4">
-          <div class="flex items-center justify-between">
-            <!-- Logo & Title -->
-            <div class="flex items-center gap-3">
-              <div class="flex flex-col items-center gap-1">
-                <div class="w-12 h-12 flex items-center justify-center">
-                  <img src="/logo.svg" alt="OutCord Logo" class="w-full h-full" />
-                </div>
-                <span class="text-sm font-bold gradient-text tracking-wide">OutCord</span>
-              </div>
+      <header class="sticky top-[40px] z-40 bg-surface border-b border-surface-lighter">
+        <div class="max-w-7xl mx-auto px-6 py-3">
+          <div class="flex items-center justify-end gap-4">
+            <!-- Auth Indicator -->
+            <div
+              class="flex items-center gap-2 px-4 py-2 rounded-lg bg-surface-light border border-surface-lighter"
+            >
+              <span class="text-lg">{{ discord.authMethod.value === 'bot' ? '🤖' : '👤' }}</span>
+              <span class="text-sm text-text-secondary font-mono">
+                {{ discord.tokenPreview.value }}
+              </span>
             </div>
 
-            <!-- User Info & Actions -->
-            <div class="flex items-center gap-4">
-              <!-- Auth Indicator -->
-              <div
-                class="flex items-center gap-2 px-4 py-2 rounded-lg bg-surface-light border border-surface-lighter"
-              >
-                <span class="text-lg">{{ discord.authMethod.value === 'bot' ? '🤖' : '👤' }}</span>
-                <span class="text-sm text-text-secondary font-mono">
-                  {{ discord.tokenPreview.value }}
-                </span>
-              </div>
-
-              <!-- Logout Button -->
-              <button
-                type="button"
-                class="px-4 py-2 rounded-lg font-semibold text-brand border-2 border-brand hover:bg-brand hover:text-white transition-all duration-200"
-                @click="discord.logout"
-              >
-                Logout
-              </button>
-            </div>
+            <!-- Logout Button -->
+            <button
+              type="button"
+              class="px-4 py-2 rounded-lg font-semibold text-brand border-2 border-brand hover:bg-brand hover:text-white transition-all duration-200"
+              @click="discord.logout"
+            >
+              Logout
+            </button>
           </div>
         </div>
       </header>
