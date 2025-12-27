@@ -29,6 +29,8 @@ declare global {
       maximizeWindow: () => Promise<void>
       closeWindow: () => Promise<void>
       isWindowMaximized: () => Promise<boolean>
+      resizeForAuth: () => Promise<void>
+      resizeForApp: () => Promise<void>
     }
   }
 }

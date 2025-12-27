@@ -27,4 +27,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   maximizeWindow: () => ipcRenderer.invoke('window:maximize'),
   closeWindow: () => ipcRenderer.invoke('window:close'),
   isWindowMaximized: () => ipcRenderer.invoke('window:is-maximized'),
+  resizeForAuth: () => ipcRenderer.invoke('window:resize-for-auth'),
+  resizeForApp: () => ipcRenderer.invoke('window:resize-for-app'),
 })

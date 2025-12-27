@@ -24,20 +24,19 @@ function handleAuthenticate() {
 </script>
 
 <template>
-  <div
-    class="fixed inset-0 z-50 flex items-center justify-center bg-background/90 backdrop-blur-sm animate-fade-in"
-  >
-    <div
-      class="w-full max-w-md mx-4 bg-surface rounded-2xl shadow-elevation-3 border border-surface-lighter animate-slide-up"
-    >
-      <!-- Header -->
-      <div class="p-8 pb-6 border-b border-surface-lighter">
-        <h2 class="text-3xl font-bold gradient-text mb-2">Connect to Discord</h2>
-        <p class="text-text-secondary text-sm">Choose your authentication method</p>
+  <div class="min-h-screen bg-surface border border-surface-lighter rounded-2xl flex flex-col animate-fade-in overflow-hidden">
+    <!-- Draggable Header with Logo -->
+    <div class="draggable-region flex flex-col items-center pt-8 pb-6 px-8">
+      <div class="w-16 h-16 mb-3">
+        <img src="/logo.svg" alt="OutCord Logo" class="w-full h-full" draggable="false" />
       </div>
+      <h1 class="text-3xl font-bold gradient-text mb-1">OutCord</h1>
+      <p class="text-text-muted text-xs">Export your Discord data with ease</p>
+    </div>
 
-      <!-- Content -->
-      <div class="p-8 space-y-6">
+    <!-- Auth Content -->
+    <div class="flex-1 flex flex-col justify-center px-8">
+      <div class="space-y-6 non-draggable">
         <!-- Method Selector -->
         <div class="flex gap-3">
           <button
@@ -137,3 +136,13 @@ function handleAuthenticate() {
     </div>
   </div>
 </template>
+
+<style scoped>
+.draggable-region {
+  -webkit-app-region: drag;
+}
+
+.non-draggable {
+  -webkit-app-region: no-drag;
+}
+</style>

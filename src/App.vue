@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, watch } from 'vue'
 import { useDiscord } from './composables/useDiscord'
 import TitleBar from './components/TitleBar.vue'
 import AuthModal from './components/AuthModal.vue'
@@ -13,6 +13,15 @@ const discord = useDiscord()
 const canExport = computed(() => {
   return discord.channels.value.length > 0 && discord.selectedGuildId.value !== null
 })
+
+// Resize window based on auth state
+watch(() => discord.isAuthenticated.value, async (isAuth) => {
+  if (isAuth) {
+    await window.electronAPI?.resizeForApp()
+  } else {
+    await window.electronAPI?.resizeForAuth()
+  }
+}, { immediate: true })
 
 async function handleAuthenticate(token: string, method: AuthMethod) {
   await discord.authenticate(token, method)

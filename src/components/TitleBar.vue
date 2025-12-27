@@ -22,15 +22,9 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="titlebar bg-surface border-b border-surface-lighter select-none">
+  <div class="titlebar bg-surface select-none">
     <!-- Draggable region (left side with logo) -->
-    <div class="draggable flex items-center gap-3 px-4 py-2 flex-1">
-      <div class="flex flex-col items-center gap-1">
-        <div class="w-8 h-8 flex items-center justify-center">
-          <img src="/logo.svg" alt="OutCord Logo" class="w-full h-full" draggable="false" />
-        </div>
-      </div>
-    </div>
+    <div class="draggable flex items-center gap-3 px-4 py-2 flex-1"></div>
 
     <!-- Window controls (right side) -->
     <div class="window-controls flex items-stretch">

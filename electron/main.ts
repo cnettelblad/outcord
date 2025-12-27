@@ -30,15 +30,18 @@ function createWindow() {
         : path.join(appRoot, 'assets/icons/icon.png')
 
   win = new BrowserWindow({
-    width: 1200,
-    height: 800,
-    minWidth: 800,
-    minHeight: 600,
+    width: 500,
+    height: 700,
+    minWidth: 450,
+    minHeight: 650,
     frame: false,
     titleBarStyle: 'hiddenInset',
     title: 'OutCord',
     trafficLightPosition: { x: -100, y: -100 },
-    backgroundColor: '#0B0E11',
+    backgroundColor: '#1e1f22',
+    transparent: true,
+    roundedCorners: true,
+    hasShadow: true,
     icon: iconPath,
     webPreferences: {
       preload: path.join(__dirname, 'preload.mjs'),
@@ -128,11 +131,19 @@ ipcMain.handle('window:is-maximized', () => {
   return win?.isMaximized() || false
 })
 
+ipcMain.handle('window:resize-for-auth', () => {
+  win?.setSize(500, 700)
+  win?.center()
+})
+
+ipcMain.handle('window:resize-for-app', () => {
+  win?.setSize(1200, 800)
+  win?.center()
+})
+
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit()
-    win = null
-  }
+  app.quit()
+  win = null
 })
 
 app.on('activate', () => {
