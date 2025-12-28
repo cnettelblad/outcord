@@ -15,13 +15,17 @@ const canExport = computed(() => {
 })
 
 // Resize window based on auth state
-watch(() => discord.isAuthenticated.value, async (isAuth) => {
-  if (isAuth) {
-    await window.electronAPI?.resizeForApp()
-  } else {
-    await window.electronAPI?.resizeForAuth()
-  }
-}, { immediate: true })
+watch(
+  () => discord.isAuthenticated.value,
+  async (isAuth) => {
+    if (isAuth) {
+      await window.electronAPI?.resizeForApp()
+    } else {
+      await window.electronAPI?.resizeForAuth()
+    }
+  },
+  { immediate: true }
+)
 
 async function handleAuthenticate(token: string, method: AuthMethod) {
   await discord.authenticate(token, method)
@@ -73,7 +77,7 @@ async function handleExport() {
             <!-- Logout Button -->
             <button
               type="button"
-              class="px-4 py-2 rounded-lg font-semibold text-brand border-2 border-brand hover:bg-brand hover:text-white transition-all duration-200"
+              class="px-4 py-2 rounded-lg font-semibold text-brand border-2 border-brand hover:bg-brand hover:text-white cursor-pointer transition-all duration-200"
               @click="discord.logout"
             >
               Logout

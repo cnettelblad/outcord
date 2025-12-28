@@ -14,7 +14,7 @@ const emit = defineEmits<{
     <button
       type="button"
       :disabled="disabled || isLoading"
-      class="group relative px-8 py-3.5 rounded-xl font-bold text-white cta-gradient shadow-glow-cta disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] overflow-hidden"
+      class="group relative px-8 py-3.5 rounded-xl font-bold text-white cta-gradient shadow-glow-cta cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] overflow-hidden"
       @click="emit('export')"
     >
       <!-- Background Animation -->

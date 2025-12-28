@@ -145,11 +145,7 @@ function getChannelTypeIcon(type: number): string {
         </div>
 
         <!-- Categorized Channels (sorted by category position) -->
-        <div
-          v-for="category in channelsByCategory.categories"
-          :key="category.id"
-          class="space-y-2"
-        >
+        <div v-for="category in channelsByCategory.categories" :key="category.id" class="space-y-2">
           <!-- Category Header -->
           <div class="flex items-center gap-2 px-2 py-1">
             <svg class="w-4 h-4 text-text-muted" fill="currentColor" viewBox="0 0 20 20">
