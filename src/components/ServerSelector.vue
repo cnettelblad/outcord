@@ -1,7 +1,8 @@
 <script setup lang="ts">
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import type { DiscordGuild } from '../types/discord'
 
-defineProps<{
+const props = defineProps<{
   guilds: DiscordGuild[]
   selectedGuildId: string | null
   isLoading: boolean
@@ -11,50 +12,150 @@ const emit = defineEmits<{
   selectServer: [guildId: string]
 }>()
 
-function handleSelect(event: Event) {
-  const target = event.target as HTMLSelectElement
-  if (target.value) {
-    emit('selectServer', target.value)
+const isOpen = ref(false)
+
+const selectedGuild = computed(() => {
+  return props.guilds.find((g) => g.id === props.selectedGuildId)
+})
+
+function toggleDropdown() {
+  if (props.isLoading || props.guilds.length === 0) return
+  isOpen.value = !isOpen.value
+}
+
+function selectGuild(guild: DiscordGuild) {
+  emit('selectServer', guild.id)
+  isOpen.value = false
+}
+
+function getGuildIconUrl(guild: DiscordGuild): string | null {
+  if (!guild.icon) return null
+  return `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png?size=64`
+}
+
+// Close dropdown when clicking outside
+function handleClickOutside(event: MouseEvent) {
+  const target = event.target as HTMLElement
+  if (!target.closest('.custom-dropdown')) {
+    isOpen.value = false
   }
 }
+
+// Add/remove click outside listener
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
 </script>
 
 <template>
   <div class="space-y-2">
-    <label for="guild-select" class="block text-sm font-semibold text-text-primary">
-      Select Server
-    </label>
-    <div class="relative">
-      <select
-        id="guild-select"
-        :value="selectedGuildId || ''"
+    <label class="block text-sm font-semibold text-text-primary"> Select Server </label>
+    <div class="relative custom-dropdown">
+      <!-- Dropdown Button -->
+      <button
+        type="button"
         :disabled="isLoading || guilds.length === 0"
-        class="w-full px-4 py-3 pr-10 bg-surface-light border-2 border-surface-lighter rounded-xl text-text-primary appearance-none cursor-pointer focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
-        @change="handleSelect"
+        class="w-full px-4 py-3 pr-10 bg-surface-light border-2 border-surface-lighter rounded-xl text-text-primary cursor-pointer focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 text-left"
+        @click="toggleDropdown"
       >
-        <option value="" disabled>
-          {{ guilds.length === 0 ? 'No servers available' : 'Choose a server...' }}
-        </option>
-        <option
+        <div class="flex items-center gap-3">
+          <!-- Selected Guild Icon -->
+          <div
+            v-if="selectedGuild"
+            class="w-8 h-8 rounded-full bg-background-lighter flex items-center justify-center overflow-hidden flex-shrink-0"
+          >
+            <img
+              v-if="getGuildIconUrl(selectedGuild)"
+              :src="getGuildIconUrl(selectedGuild)!"
+              :alt="selectedGuild.name"
+              class="w-full h-full object-cover"
+            />
+            <span v-else class="text-xs font-bold text-text-secondary">
+              {{ selectedGuild.name.charAt(0).toUpperCase() }}
+            </span>
+          </div>
+
+          <!-- Selected Guild Name or Placeholder -->
+          <span :class="selectedGuild ? 'text-text-primary' : 'text-text-muted'">
+            {{
+              selectedGuild
+                ? selectedGuild.name
+                : guilds.length === 0
+                  ? 'No servers available'
+                  : 'Choose a server...'
+            }}
+          </span>
+        </div>
+
+        <!-- Dropdown Arrow -->
+        <div
+          class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-text-secondary transition-transform duration-200"
+          :class="isOpen ? 'rotate-180' : ''"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M19 9l-7 7-7-7"
+            />
+          </svg>
+        </div>
+      </button>
+
+      <!-- Dropdown Menu -->
+      <div
+        v-if="isOpen && guilds.length > 0"
+        class="absolute z-50 w-full mt-2 bg-surface border-2 border-surface-lighter rounded-xl shadow-elevation-3 max-h-64 overflow-y-auto custom-scrollbar animate-fade-in"
+      >
+        <button
           v-for="guild in guilds"
           :key="guild.id"
-          :value="guild.id"
-          class="bg-surface text-text-primary"
+          type="button"
+          class="w-full px-4 py-3 flex items-center gap-3 hover:bg-surface-light transition-colors cursor-pointer text-left"
+          :class="selectedGuildId === guild.id ? 'bg-surface-light' : ''"
+          @click="selectGuild(guild)"
         >
-          {{ guild.name }}
-        </option>
-      </select>
-      <div
-        class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-text-secondary"
-      >
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M19 9l-7 7-7-7"
-          />
-        </svg>
+          <!-- Guild Icon -->
+          <div
+            class="w-8 h-8 rounded-full bg-background-lighter flex items-center justify-center overflow-hidden flex-shrink-0"
+          >
+            <img
+              v-if="getGuildIconUrl(guild)"
+              :src="getGuildIconUrl(guild)!"
+              :alt="guild.name"
+              class="w-full h-full object-cover"
+            />
+            <span v-else class="text-xs font-bold text-text-secondary">
+              {{ guild.name.charAt(0).toUpperCase() }}
+            </span>
+          </div>
+
+          <!-- Guild Name -->
+          <span class="flex-1 text-text-primary font-medium truncate">
+            {{ guild.name }}
+          </span>
+
+          <!-- Selected Indicator -->
+          <svg
+            v-if="selectedGuildId === guild.id"
+            class="w-5 h-5 text-cta flex-shrink-0"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M5 13l4 4L19 7"
+            />
+          </svg>
+        </button>
       </div>
     </div>
   </div>

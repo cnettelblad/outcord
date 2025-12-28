@@ -16,7 +16,6 @@ const tokenInput = ref('')
 const isPollingForToken = ref(false)
 let pollInterval: number | null = null
 
-// Cleanup on unmount
 onUnmounted(() => {
   stopPolling()
 })
@@ -34,6 +33,10 @@ function goBack() {
 
 function handleAuthenticate() {
   if (!tokenInput.value.trim()) {
+    return
+  }
+
+  if (!selectedMethod.value) {
     return
   }
 
