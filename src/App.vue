@@ -1,14 +1,18 @@
 <script setup lang="ts">
-import { computed, watch } from 'vue'
+import { computed, watch, ref } from 'vue'
 import { useDiscord } from './composables/useDiscord'
 import TitleBar from './components/TitleBar.vue'
 import AuthModal from './components/AuthModal.vue'
 import ServerSelector from './components/ServerSelector.vue'
 import ChannelList from './components/ChannelList.vue'
 import ExportButton from './components/ExportButton.vue'
+import ExportModal, { type ExportSettings } from './components/ExportModal.vue'
 import type { AuthMethod } from './types/app'
+import { serverChannelsContext } from './utils/export-contexts'
 
 const discord = useDiscord()
+const showExportModal = ref(false)
+const exportContext = serverChannelsContext
 
 const canExport = computed(() => {
   return discord.channels.value.length > 0 && discord.selectedGuildId.value !== null
@@ -35,8 +39,13 @@ async function handleSelectServer(guildId: string) {
   await discord.loadChannels(guildId)
 }
 
-async function handleExport() {
-  await discord.exportChannels()
+function handleExport() {
+  showExportModal.value = true
+}
+
+async function handleExportWithSettings(settings: ExportSettings) {
+  showExportModal.value = false
+  await discord.exportChannels(settings)
 }
 </script>
 
@@ -129,6 +138,14 @@ async function handleExport() {
           </div>
         </div>
       </footer>
+
+      <!-- Export Modal -->
+      <ExportModal
+        :is-open="showExportModal"
+        :context="exportContext"
+        @close="showExportModal = false"
+        @export="handleExportWithSettings"
+      />
     </div>
   </div>
 </template>

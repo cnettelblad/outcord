@@ -125,7 +125,8 @@ export function formatChannelForExport(
 
 export function buildExportData(
   guild: DiscordGuild,
-  channels: DiscordChannel[]
+  channels: DiscordChannel[],
+  selectedFields?: string[]
 ): ExportedChannelData {
   // Separate categories from channels
   const categories = channels.filter((ch) => ch.type === 4)
@@ -137,6 +138,37 @@ export function buildExportData(
     categoryMap.set(cat.id, cat.name)
   })
 
+  // Map selected field keys to ChannelExport keys
+  const fieldMapping: Record<string, string> = {
+    channelId: 'id',
+    channelName: 'name',
+    channelType: 'type',
+    channelPosition: 'position',
+    categoryName: 'categoryName',
+    topic: 'topic',
+    nsfw: 'nsfw',
+    permissions: 'permissions',
+    rateLimit: 'rateLimit',
+    createdAt: 'createdAt',
+  }
+
+  // Convert selected fields to actual field names
+  const fieldsToInclude = selectedFields
+    ? new Set(selectedFields.map((f) => fieldMapping[f] || f))
+    : null
+
+  const filterFields = (data: ChannelExport): Partial<ChannelExport> => {
+    if (!fieldsToInclude) return data
+
+    const filtered: Partial<ChannelExport> = {}
+    Object.entries(data).forEach(([key, value]) => {
+      if (fieldsToInclude.has(key)) {
+        ;(filtered as Record<string, unknown>)[key] = value
+      }
+    })
+    return filtered
+  }
+
   return {
     serverId: guild.id,
     serverName: guild.name,
@@ -146,6 +178,8 @@ export function buildExportData(
       name: cat.name,
       position: cat.position,
     })),
-    channels: regularChannels.map((ch) => formatChannelForExport(ch, categoryMap)),
+    channels: regularChannels
+      .map((ch) => formatChannelForExport(ch, categoryMap))
+      .map((ch) => filterFields(ch)) as ChannelExport[],
   }
 }

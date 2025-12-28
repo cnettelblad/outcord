@@ -1,7 +1,7 @@
 /// <reference types="vite/client" />
 
 import type { AuthMethod } from './types/app'
-import type { DiscordGuild, DiscordChannel, ExportedChannelData } from './types/discord'
+import type { DiscordGuild, DiscordChannel } from './types/discord'
 
 declare global {
   interface Window {
@@ -22,7 +22,11 @@ declare global {
       fetchChannels: (guildId: string) => Promise<DiscordChannel[]>
 
       // Export
-      exportChannels: (data: ExportedChannelData) => Promise<string>
+      exportChannels: (params: {
+        content: string
+        extension: string
+        filename: string
+      }) => Promise<string>
 
       // Window controls
       minimizeWindow: () => Promise<void>

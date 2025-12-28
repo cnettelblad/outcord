@@ -1,7 +1,9 @@
 import { ref, onMounted } from 'vue'
 import type { AuthMethod } from '../types/app'
 import type { DiscordGuild, DiscordChannel } from '../types/discord'
+import type { ExportSettings } from '../components/ExportModal.vue'
 import { buildExportData } from '../utils/discord-api'
+import { formatExportData } from '../utils/export-formatters'
 
 export function useDiscord() {
   const isAuthenticated = ref(false)
@@ -77,7 +79,7 @@ export function useDiscord() {
     }
   }
 
-  async function exportChannels(): Promise<void> {
+  async function exportChannels(settings: ExportSettings): Promise<void> {
     if (!selectedGuild.value) {
       error.value = 'No server selected'
       return
@@ -92,8 +94,27 @@ export function useDiscord() {
       error.value = null
       isLoading.value = true
 
-      const exportData = buildExportData(selectedGuild.value, channels.value)
-      const filePath = await window.electronAPI?.exportChannels(exportData)
+      // Build export data with selected fields
+      const exportData = buildExportData(
+        selectedGuild.value,
+        channels.value,
+        settings.selectedFields
+      )
+
+      // Format data according to selected format
+      const { content, extension } = formatExportData(exportData, settings.format)
+
+      // Generate filename
+      const date = new Date().toISOString().split('T')[0]
+      const serverName = selectedGuild.value.name.replace(/[^a-z0-9]/gi, '_')
+      const filename = `${serverName}_channels_${date}.${extension}`
+
+      // Export to file
+      const filePath = await window.electronAPI?.exportChannels({
+        content,
+        extension,
+        filename,
+      })
 
       if (filePath) {
         alert(`Channels exported successfully to:\n${filePath}`)

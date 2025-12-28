@@ -20,7 +20,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   fetchChannels: (guildId: string) => ipcRenderer.invoke('discord:fetch-channels', guildId),
 
   // Export
-  exportChannels: (data: unknown) => ipcRenderer.invoke('export:channels', data),
+  exportChannels: (params: { content: string; extension: string; filename: string }) =>
+    ipcRenderer.invoke('export:channels', params),
 
   // Window controls
   minimizeWindow: () => ipcRenderer.invoke('window:minimize'),

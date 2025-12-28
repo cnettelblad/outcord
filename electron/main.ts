@@ -107,8 +107,9 @@ ipcMain.handle('discord:fetch-channels', async (_event, guildId: string) => {
 })
 
 // Export handlers
-ipcMain.handle('export:channels', async (_event, data: unknown) => {
-  return exportService.exportToJSON(data as Parameters<typeof exportService.exportToJSON>[0])
+ipcMain.handle('export:channels', async (_event, exportParams: unknown) => {
+  const params = exportParams as { content: string; extension: string; filename: string }
+  return exportService.exportData(params)
 })
 
 // Window control handlers
