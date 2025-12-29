@@ -62,21 +62,12 @@ function formatAsMarkdown(data: ExportedChannelData): string {
   const lines: string[] = []
 
   // Title
-  lines.push(`# ${data.serverName} - Channel Export`)
+  lines.push(`# ${data.metadata.serverName} - Channel Export`)
   lines.push('')
-  lines.push(`**Export Date:** ${new Date(data.exportDate).toLocaleString()}`)
-  lines.push(`**Server ID:** ${data.serverId}`)
+  lines.push(`**Export Date:** ${new Date(data.metadata.exportDate).toLocaleString()}`)
+  lines.push(`**Server ID:** ${data.metadata.serverId}`)
+  lines.push(`**Total Channels:** ${data.metadata.totalChannels}`)
   lines.push('')
-
-  // Categories
-  if (data.categories.length > 0) {
-    lines.push('## Categories')
-    lines.push('')
-    data.categories.forEach((cat) => {
-      lines.push(`- **${cat.name}** (Position: ${cat.position})`)
-    })
-    lines.push('')
-  }
 
   // Channels
   lines.push('## Channels')
@@ -85,20 +76,29 @@ function formatAsMarkdown(data: ExportedChannelData): string {
   if (data.channels.length === 0) {
     lines.push('*No channels to export*')
   } else {
-    // Group by category
-    const channelsByCategory = new Map<string | null, (typeof data.channels)[]>()
+    // Group by category name
+    const channelsByCategory = new Map<string | null, ChannelExport[]>()
 
     data.channels.forEach((channel) => {
-      const categoryId = (channel as ChannelExport).categoryId || null
-      const categoryArray = channelsByCategory.get(categoryId)
+      const categoryName = channel.categoryName || null
+      const categoryArray = channelsByCategory.get(categoryName)
       if (categoryArray) {
         categoryArray.push(channel)
       } else {
-        channelsByCategory.set(categoryId, [channel])
+        channelsByCategory.set(categoryName, [channel])
       }
     })
 
-    // Uncategorized channels
+    // Get unique category names sorted by position
+    const categoryEntries = Array.from(channelsByCategory.entries())
+      .filter(([name]) => name !== null)
+      .sort((a, b) => {
+        const posA = a[1][0]?.categoryPosition ?? 0
+        const posB = b[1][0]?.categoryPosition ?? 0
+        return posA - posB
+      })
+
+    // Uncategorized channels first
     const uncategorized = channelsByCategory.get(null)
     if (uncategorized) {
       lines.push('### Uncategorized')
@@ -110,47 +110,44 @@ function formatAsMarkdown(data: ExportedChannelData): string {
     }
 
     // Categorized channels
-    data.categories.forEach((cat) => {
-      const categoryChannels = channelsByCategory.get(cat.id)
-      if (categoryChannels) {
-        lines.push(`### ${cat.name}`)
-        lines.push('')
-        categoryChannels.forEach((channel) => {
-          lines.push(formatChannelAsMarkdown(channel))
-        })
-        lines.push('')
-      }
+    categoryEntries.forEach(([categoryName, channels]) => {
+      lines.push(`### ${categoryName}`)
+      lines.push('')
+      channels.forEach((channel) => {
+        lines.push(formatChannelAsMarkdown(channel))
+      })
+      lines.push('')
     })
   }
 
   return lines.join('\n')
 }
 
-function formatChannelAsMarkdown(channel: Partial<ChannelExport>): string {
+function formatChannelAsMarkdown(channel: ChannelExport): string {
   const lines: string[] = []
-  const ch = channel as Record<string, unknown>
 
   // Channel name (required)
-  if (ch.name) {
-    lines.push(`#### ${ch.name}`)
+  if (channel.name) {
+    lines.push(`#### ${channel.name}`)
   }
 
   const details: string[] = []
 
-  if (ch.id) details.push(`**ID:** \`${ch.id}\``)
-  if (ch.type) details.push(`**Type:** ${ch.type}`)
-  if (ch.position !== undefined) details.push(`**Position:** ${ch.position}`)
-  if (ch.topic) details.push(`**Topic:** ${ch.topic}`)
-  if (ch.nsfw) details.push(`**NSFW:** Yes`)
-  if (ch.rateLimit) details.push(`**Slowmode:** ${ch.rateLimit}s`)
-  if (ch.createdAt) details.push(`**Created:** ${new Date(ch.createdAt).toLocaleString()}`)
+  if (channel.id) details.push(`**ID:** \`${channel.id}\``)
+  if (channel.type) details.push(`**Type:** ${channel.type}`)
+  if (channel.position !== undefined) details.push(`**Position:** ${channel.position}`)
+  if (channel.topic) details.push(`**Topic:** ${channel.topic}`)
+  if (channel.nsfw) details.push(`**NSFW:** Yes`)
+  if (channel.rateLimit) details.push(`**Slowmode:** ${channel.rateLimit}s`)
+  if (channel.permissionCount && channel.permissionCount > 0) {
+    details.push(`**Permissions:** ${channel.permissionCount} override(s)`)
+  }
+  if (channel.createdAt) {
+    details.push(`**Created:** ${new Date(channel.createdAt).toLocaleString()}`)
+  }
 
   if (details.length > 0) {
     lines.push(details.join(' • '))
-  }
-
-  if (ch.permissions && Array.isArray(ch.permissions) && ch.permissions.length > 0) {
-    lines.push(`**Permissions:** ${ch.permissions.length} override(s)`)
   }
 
   lines.push('')

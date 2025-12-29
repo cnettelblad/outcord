@@ -106,19 +106,22 @@ function getSnowflakeTimestamp(snowflake: string): string {
 
 export function formatChannelForExport(
   channel: DiscordChannel,
-  categories: Map<string, string>
+  categoryMap: Map<string, { name: string; position: number }>
 ): ChannelExport {
+  const category = channel.parent_id ? categoryMap.get(channel.parent_id) : null
+
   return {
     id: channel.id,
     name: channel.name,
     type: channelTypeToString(channel.type),
     position: channel.position,
-    categoryId: channel.parent_id,
-    categoryName: channel.parent_id ? categories.get(channel.parent_id) || null : null,
+    categoryId: channel.parent_id || null,
+    categoryName: category?.name || null,
+    categoryPosition: category?.position || null,
     topic: channel.topic || null,
     nsfw: channel.nsfw || false,
     rateLimit: channel.rate_limit_per_user || null,
-    permissions: (channel.permission_overwrites || []).map(parsePermissions),
+    permissionCount: (channel.permission_overwrites || []).length,
     createdAt: getSnowflakeTimestamp(channel.id),
   }
 }
@@ -132,10 +135,10 @@ export function buildExportData(
   const categories = channels.filter((ch) => ch.type === 4)
   const regularChannels = channels.filter((ch) => ch.type !== 4)
 
-  // Build category map for lookups
-  const categoryMap = new Map<string, string>()
+  // Build category map with name and position
+  const categoryMap = new Map<string, { name: string; position: number }>()
   categories.forEach((cat) => {
-    categoryMap.set(cat.id, cat.name)
+    categoryMap.set(cat.id, { name: cat.name, position: cat.position })
   })
 
   // Map selected field keys to ChannelExport keys
@@ -147,7 +150,7 @@ export function buildExportData(
     categoryName: 'categoryName',
     topic: 'topic',
     nsfw: 'nsfw',
-    permissions: 'permissions',
+    permissions: 'permissionCount',
     rateLimit: 'rateLimit',
     createdAt: 'createdAt',
   }
@@ -157,29 +160,29 @@ export function buildExportData(
     ? new Set(selectedFields.map((f) => fieldMapping[f] || f))
     : null
 
-  const filterFields = (data: ChannelExport): Partial<ChannelExport> => {
+  const filterFields = (data: ChannelExport): ChannelExport => {
     if (!fieldsToInclude) return data
 
-    const filtered: Partial<ChannelExport> = {}
+    const filtered: Record<string, unknown> = {}
     Object.entries(data).forEach(([key, value]) => {
       if (fieldsToInclude.has(key)) {
-        ;(filtered as Record<string, unknown>)[key] = value
+        filtered[key] = value
       }
     })
-    return filtered
+    return filtered as ChannelExport
   }
 
+  const exportedChannels = regularChannels
+    .map((ch) => formatChannelForExport(ch, categoryMap))
+    .map((ch) => filterFields(ch))
+
   return {
-    serverId: guild.id,
-    serverName: guild.name,
-    exportDate: new Date().toISOString(),
-    categories: categories.map((cat) => ({
-      id: cat.id,
-      name: cat.name,
-      position: cat.position,
-    })),
-    channels: regularChannels
-      .map((ch) => formatChannelForExport(ch, categoryMap))
-      .map((ch) => filterFields(ch)) as ChannelExport[],
+    metadata: {
+      serverId: guild.id,
+      serverName: guild.name,
+      exportDate: new Date().toISOString(),
+      totalChannels: exportedChannels.length,
+    },
+    channels: exportedChannels,
   }
 }

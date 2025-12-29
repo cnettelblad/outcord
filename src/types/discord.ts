@@ -29,11 +29,13 @@ export interface PermissionOverwrite {
 }
 
 export interface ExportedChannelData {
-  serverId: string
-  serverName: string
-  exportDate: string
+  metadata: {
+    serverId: string
+    serverName: string
+    exportDate: string
+    totalChannels: number
+  }
   channels: ChannelExport[]
-  categories: CategoryExport[]
 }
 
 export interface ChannelExport {
@@ -43,17 +45,12 @@ export interface ChannelExport {
   position: number
   categoryId: string | null
   categoryName: string | null
+  categoryPosition: number | null
   topic: string | null
   nsfw: boolean
   rateLimit: number | null
-  permissions: PermissionExport[]
+  permissionCount: number
   createdAt: string
-}
-
-export interface CategoryExport {
-  id: string
-  name: string
-  position: number
 }
 
 export interface PermissionExport {
