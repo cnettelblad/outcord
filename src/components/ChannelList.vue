@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { DiscordChannel } from '../types/discord'
+import type { DiscordDMChannel } from '../vite-env'
 import { channelTypeToString } from '../utils/discord-api'
 
 const props = defineProps<{
   channels: DiscordChannel[]
+  dmChannels: DiscordDMChannel[]
+  isDMMode: boolean
   isLoading: boolean
 }>()
 
@@ -50,6 +53,65 @@ function getChannelTypeIcon(type: number): string {
   }
   return icons[type] || '•'
 }
+
+function getDMName(dm: DiscordDMChannel): string {
+  if (dm.type === 3) {
+    // Group DM
+    return dm.recipients.map((r) => r.global_name || r.username).join(', ')
+  }
+  // Direct DM
+  const recipient = dm.recipients[0]
+  return recipient?.global_name || recipient?.username || 'Unknown User'
+}
+
+function getDMAvatar(dm: DiscordDMChannel): string | null {
+  if (dm.type === 3 || !dm.recipients[0]) return null
+  const recipient = dm.recipients[0]
+  if (!recipient.avatar) return null
+  return `https://cdn.discordapp.com/avatars/${recipient.id}/${recipient.avatar}.png?size=64`
+}
+
+function getSnowflakeTimestamp(snowflake: string | null): number | null {
+  if (!snowflake) return null
+  const DISCORD_EPOCH = 1420070400000
+  const timestamp = Number(BigInt(snowflake) >> BigInt(22)) + DISCORD_EPOCH
+  return timestamp
+}
+
+function formatLastMessageDate(dm: DiscordDMChannel): string {
+  const timestamp = getSnowflakeTimestamp(dm.last_message_id)
+  if (!timestamp) return 'No messages'
+
+  const date = new Date(timestamp)
+  const now = new Date()
+  const diff = now.getTime() - date.getTime()
+
+  // Less than 1 day - show time
+  if (diff < 24 * 60 * 60 * 1000) {
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  }
+
+  // Less than 7 days - show day name
+  if (diff < 7 * 24 * 60 * 60 * 1000) {
+    return date.toLocaleDateString([], { weekday: 'long' })
+  }
+
+  // Less than 1 year - show month and day
+  if (diff < 365 * 24 * 60 * 60 * 1000) {
+    return date.toLocaleDateString([], { month: 'short', day: 'numeric' })
+  }
+
+  // Show full date
+  return date.toLocaleDateString([], { year: 'numeric', month: 'short', day: 'numeric' })
+}
+
+const sortedDMChannels = computed(() => {
+  return [...props.dmChannels].sort((a, b) => {
+    const timestampA = getSnowflakeTimestamp(a.last_message_id) || 0
+    const timestampB = getSnowflakeTimestamp(b.last_message_id) || 0
+    return timestampB - timestampA // Descending order (most recent first)
+  })
+})
 </script>
 
 <template>
@@ -65,7 +127,10 @@ function getChannelTypeIcon(type: number): string {
     </div>
 
     <!-- Empty State -->
-    <div v-else-if="channels.length === 0" class="p-16 text-center animate-fade-in">
+    <div
+      v-else-if="(isDMMode && dmChannels.length === 0) || (!isDMMode && channels.length === 0)"
+      class="p-16 text-center animate-fade-in"
+    >
       <div
         class="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gradient-to-br from-brand/20 to-cta/20 mb-6"
       >
@@ -83,10 +148,73 @@ function getChannelTypeIcon(type: number): string {
           />
         </svg>
       </div>
-      <h3 class="text-text-primary text-xl font-bold mb-2">No channels yet</h3>
+      <h3 class="text-text-primary text-xl font-bold mb-2">
+        {{ isDMMode ? 'No direct messages' : 'No channels yet' }}
+      </h3>
       <p class="text-text-muted text-sm max-w-sm mx-auto">
-        Select a server from the dropdown above to view and export its channels
+        {{
+          isDMMode
+            ? 'You have no direct message conversations'
+            : 'Select a server from the dropdown above to view and export its channels'
+        }}
       </p>
+    </div>
+
+    <!-- DM List -->
+    <div v-else-if="isDMMode" class="max-h-[600px] overflow-y-auto custom-scrollbar">
+      <!-- DM Count Header -->
+      <div
+        class="sticky top-0 bg-surface-light/95 backdrop-blur-sm px-6 py-4 border-b border-surface-lighter z-10"
+      >
+        <p class="text-text-secondary text-sm font-semibold">
+          <span class="text-cta">{{ dmChannels.length }}</span>
+          direct messages
+        </p>
+      </div>
+
+      <!-- DM Items -->
+      <div class="p-4 space-y-2">
+        <div
+          v-for="dm in sortedDMChannels"
+          :key="dm.id"
+          class="group flex items-center gap-3 px-3 py-2.5 rounded-lg bg-surface-light/50 hover:bg-surface-lighter hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer"
+        >
+          <!-- DM Avatar -->
+          <div
+            class="w-10 h-10 rounded-full bg-background-lighter flex items-center justify-center overflow-hidden flex-shrink-0"
+          >
+            <img
+              v-if="getDMAvatar(dm)"
+              :src="getDMAvatar(dm)!"
+              :alt="getDMName(dm)"
+              class="w-full h-full object-cover"
+            />
+            <span v-else class="text-sm font-bold text-text-secondary">
+              {{ getDMName(dm).charAt(0).toUpperCase() }}
+            </span>
+          </div>
+
+          <!-- DM Info -->
+          <div class="flex-1 min-w-0">
+            <span
+              class="block font-medium text-text-primary group-hover:text-white transition-colors truncate"
+            >
+              {{ getDMName(dm) }}
+            </span>
+            <span class="block text-xs text-text-muted">
+              {{ formatLastMessageDate(dm) }}
+            </span>
+          </div>
+
+          <!-- DM Type Badge -->
+          <span
+            v-if="dm.type === 3"
+            class="flex-shrink-0 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-md bg-background-lighter text-text-muted"
+          >
+            Group
+          </span>
+        </div>
+      </div>
     </div>
 
     <!-- Channels List -->

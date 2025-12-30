@@ -12,6 +12,13 @@ export interface DiscordUser {
   global_name?: string | null
 }
 
+export interface DiscordDMChannel {
+  id: string
+  type: 1 | 3 // 1 = DM, 3 = Group DM
+  last_message_id: string | null
+  recipients: DiscordUser[]
+}
+
 declare global {
   interface Window {
     electronAPI?: {
@@ -30,6 +37,7 @@ declare global {
       // Discord API
       fetchGuilds: () => Promise<DiscordGuild[]>
       fetchChannels: (guildId: string) => Promise<DiscordChannel[]>
+      fetchDMs: () => Promise<DiscordDMChannel[]>
 
       // Export
       exportChannels: (params: {

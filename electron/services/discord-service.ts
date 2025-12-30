@@ -33,6 +33,13 @@ interface DiscordChannel {
   }>
 }
 
+export interface DiscordDMChannel {
+  id: string
+  type: 1 | 3 // 1 = DM, 3 = Group DM
+  last_message_id: string | null
+  recipients: DiscordUser[]
+}
+
 function getAuthHeader(token: string, method: 'bot' | 'user'): string {
   return method === 'bot' ? `Bot ${token}` : token
 }
@@ -88,4 +95,8 @@ export async function fetchChannels(
   method: 'bot' | 'user'
 ): Promise<DiscordChannel[]> {
   return makeDiscordRequest<DiscordChannel[]>(`/guilds/${guildId}/channels`, token, method)
+}
+
+export async function fetchDMs(token: string, method: 'bot' | 'user'): Promise<DiscordDMChannel[]> {
+  return makeDiscordRequest<DiscordDMChannel[]>('/users/@me/channels', token, method)
 }

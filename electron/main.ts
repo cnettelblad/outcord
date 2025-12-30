@@ -110,6 +110,13 @@ ipcMain.handle('discord:fetch-channels', async (_event, guildId: string) => {
   return discordService.fetchChannels(guildId, auth.token, auth.method)
 })
 
+ipcMain.handle('discord:fetch-dms', async () => {
+  const auth = storageService.getToken()
+  if (!auth) throw new Error('Not authenticated')
+
+  return discordService.fetchDMs(auth.token, auth.method)
+})
+
 // Export handlers
 ipcMain.handle('export:channels', async (_event, exportParams: unknown) => {
   const params = exportParams as { content: string; extension: string; filename: string }

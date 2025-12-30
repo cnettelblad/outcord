@@ -18,6 +18,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Discord API
   fetchGuilds: () => ipcRenderer.invoke('discord:fetch-guilds'),
   fetchChannels: (guildId: string) => ipcRenderer.invoke('discord:fetch-channels', guildId),
+  fetchDMs: () => ipcRenderer.invoke('discord:fetch-dms'),
 
   // Export
   exportChannels: (params: { content: string; extension: string; filename: string }) =>

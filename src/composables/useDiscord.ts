@@ -1,8 +1,8 @@
-import { ref, onMounted, inject } from 'vue'
+import { ref, onMounted, inject, computed } from 'vue'
 import type { AuthMethod } from '../types/app'
 import type { DiscordGuild, DiscordChannel } from '../types/discord'
 import type { ExportSettings } from '../components/ExportModal.vue'
-import type { DiscordUser } from '../vite-env'
+import type { DiscordUser, DiscordDMChannel } from '../vite-env'
 import { buildExportData } from '../utils/discord-api'
 import { formatExportData } from '../utils/export-formatters'
 import type { useToast } from './useToast'
@@ -18,6 +18,9 @@ export function useDiscord() {
   const selectedGuild = ref<DiscordGuild | null>(null)
   const guilds = ref<DiscordGuild[]>([])
   const channels = ref<DiscordChannel[]>([])
+
+  const isDMMode = ref(false)
+  const dmChannels = ref<DiscordDMChannel[]>([])
 
   const isLoading = ref(false)
   const error = ref<string | null>(null)
@@ -42,6 +45,11 @@ export function useDiscord() {
       user.value = userData
 
       await loadGuilds()
+
+      // Auto-load DMs for user accounts
+      if (method === 'user') {
+        await loadDMs()
+      }
 
       return true
     } catch (err) {
@@ -71,6 +79,7 @@ export function useDiscord() {
       error.value = null
       isLoading.value = true
 
+      isDMMode.value = false
       selectedGuildId.value = guildId
       selectedGuild.value = guilds.value.find((g) => g.id === guildId) || null
 
@@ -79,6 +88,34 @@ export function useDiscord() {
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to load channels'
       channels.value = []
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  async function loadDMs(): Promise<void> {
+    try {
+      error.value = null
+      isLoading.value = true
+
+      // Check if using bot account
+      if (authMethod.value === 'bot') {
+        error.value = 'DMs are not available for bot accounts'
+        toast?.error('DMs are not available for bot accounts')
+        return
+      }
+
+      isDMMode.value = true
+      selectedGuildId.value = null
+      selectedGuild.value = null
+      channels.value = []
+
+      const fetchedDMs = await window.electronAPI?.fetchDMs()
+      dmChannels.value = fetchedDMs || []
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'Failed to load DMs'
+      toast?.error(error.value)
+      dmChannels.value = []
     } finally {
       isLoading.value = false
     }
@@ -146,6 +183,8 @@ export function useDiscord() {
     selectedGuild.value = null
     guilds.value = []
     channels.value = []
+    isDMMode.value = false
+    dmChannels.value = []
     error.value = null
   }
 
@@ -161,6 +200,11 @@ export function useDiscord() {
         user.value = stored.user
 
         await loadGuilds()
+
+        // Auto-load DMs for user accounts
+        if (stored.method === 'user') {
+          await loadDMs()
+        }
       }
     } catch (err) {
       console.error('Failed to load stored authentication:', err)
@@ -177,6 +221,8 @@ export function useDiscord() {
     selectedGuild,
     guilds,
     channels,
+    isDMMode,
+    dmChannels,
     isLoading,
     error,
 
@@ -184,6 +230,7 @@ export function useDiscord() {
     authenticate,
     loadGuilds,
     loadChannels,
+    loadDMs,
     exportChannels,
     logout,
   }
