@@ -134,11 +134,13 @@ ipcMain.handle('window:is-maximized', () => {
 })
 
 ipcMain.handle('window:resize-for-auth', () => {
+  win?.setMinimumSize(450, 650)
   win?.setSize(500, 700)
   win?.center()
 })
 
 ipcMain.handle('window:resize-for-app', () => {
+  win?.setMinimumSize(900, 600)
   win?.setSize(1200, 800)
   win?.center()
 })

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import type { DiscordGuild } from '../types/discord'
 
 const props = defineProps<{
@@ -13,14 +13,34 @@ const emit = defineEmits<{
 }>()
 
 const isOpen = ref(false)
+const dropdownRef = ref<HTMLElement | null>(null)
+const maxHeight = ref('16rem')
 
 const selectedGuild = computed(() => {
   return props.guilds.find((g) => g.id === props.selectedGuildId)
 })
 
-function toggleDropdown() {
+function calculateMaxHeight() {
+  if (!dropdownRef.value) return
+
+  const rect = dropdownRef.value.getBoundingClientRect()
+  const viewportHeight = window.innerHeight
+  const spaceBelow = viewportHeight - rect.bottom
+  const padding = 16 // 1rem padding from bottom
+
+  // Use the smaller of: available space or 384px (24rem)
+  const calculatedHeight = Math.min(spaceBelow - padding, 384)
+  maxHeight.value = `${Math.max(calculatedHeight, 128)}px` // Minimum 128px (8rem)
+}
+
+async function toggleDropdown() {
   if (props.isLoading || props.guilds.length === 0) return
   isOpen.value = !isOpen.value
+
+  if (isOpen.value) {
+    await nextTick()
+    calculateMaxHeight()
+  }
 }
 
 function selectGuild(guild: DiscordGuild) {
@@ -41,20 +61,30 @@ function handleClickOutside(event: MouseEvent) {
   }
 }
 
-// Add/remove click outside listener
+// Add/remove click outside listener and window resize listener
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
+  window.addEventListener('resize', () => {
+    if (isOpen.value) {
+      calculateMaxHeight()
+    }
+  })
 })
 
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
+  window.removeEventListener('resize', () => {
+    if (isOpen.value) {
+      calculateMaxHeight()
+    }
+  })
 })
 </script>
 
 <template>
   <div class="space-y-2">
     <label class="block text-sm font-semibold text-text-primary"> Select Server </label>
-    <div class="relative custom-dropdown">
+    <div ref="dropdownRef" class="relative custom-dropdown">
       <!-- Dropdown Button -->
       <button
         type="button"
@@ -110,7 +140,8 @@ onUnmounted(() => {
       <!-- Dropdown Menu -->
       <div
         v-if="isOpen && guilds.length > 0"
-        class="absolute z-50 w-full mt-2 bg-surface border-2 border-surface-lighter rounded-xl shadow-elevation-3 max-h-64 overflow-y-auto custom-scrollbar animate-fade-in"
+        class="absolute z-50 w-full mt-2 bg-surface border-2 border-surface-lighter rounded-xl shadow-elevation-3 overflow-y-auto custom-scrollbar animate-fade-in"
+        :style="{ maxHeight }"
       >
         <button
           v-for="guild in guilds"
