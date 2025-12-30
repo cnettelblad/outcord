@@ -1,18 +1,24 @@
 <script setup lang="ts">
-import { computed, watch, ref } from 'vue'
+import { computed, watch, ref, provide } from 'vue'
 import { useDiscord } from './composables/useDiscord'
+import { useToast } from './composables/useToast'
 import TitleBar from './components/TitleBar.vue'
 import AuthModal from './components/AuthModal.vue'
 import ServerSelector from './components/ServerSelector.vue'
 import ChannelList from './components/ChannelList.vue'
 import ExportButton from './components/ExportButton.vue'
 import ExportModal, { type ExportSettings } from './components/ExportModal.vue'
+import Toast from './components/Toast.vue'
 import type { AuthMethod } from './types/app'
 import { serverChannelsContext } from './utils/export-contexts'
 
 const discord = useDiscord()
+const toast = useToast()
 const showExportModal = ref(false)
 const exportContext = serverChannelsContext
+
+// Provide toast to all child components
+provide('toast', toast)
 
 const canExport = computed(() => {
   return discord.channels.value.length > 0 && discord.selectedGuildId.value !== null
@@ -52,15 +58,24 @@ async function handleExportWithSettings(settings: ExportSettings) {
 <template>
   <div class="min-h-screen bg-background">
     <!-- Auth Modal -->
-    <AuthModal
-      v-if="!discord.isAuthenticated.value"
-      :is-loading="discord.isLoading.value"
-      :error="discord.error.value"
-      @authenticate="handleAuthenticate"
-    />
+    <Transition
+      mode="out-in"
+      enter-active-class="transition-all duration-500 ease-out"
+      enter-from-class="opacity-0 scale-95"
+      enter-to-class="opacity-100 scale-100"
+      leave-active-class="transition-all duration-300 ease-in"
+      leave-from-class="opacity-100 scale-100"
+      leave-to-class="opacity-0 scale-95"
+    >
+      <AuthModal
+        v-if="!discord.isAuthenticated.value"
+        :is-loading="discord.isLoading.value"
+        :error="discord.error.value"
+        @authenticate="handleAuthenticate"
+      />
 
-    <!-- Main App -->
-    <div v-else class="flex flex-col min-h-screen">
+      <!-- Main App -->
+      <div v-else class="flex flex-col min-h-screen">
       <!-- Custom Title Bar (Fixed) -->
       <div class="fixed top-0 left-0 right-0 z-50">
         <TitleBar />
@@ -146,6 +161,17 @@ async function handleExportWithSettings(settings: ExportSettings) {
         @close="showExportModal = false"
         @export="handleExportWithSettings"
       />
-    </div>
+      </div>
+    </Transition>
+
+    <!-- Toast Notifications -->
+    <Toast
+      v-for="t in toast.toasts.value"
+      :key="t.id"
+      :message="t.message"
+      :type="t.type"
+      :show="true"
+      @close="toast.removeToast(t.id)"
+    />
   </div>
 </template>

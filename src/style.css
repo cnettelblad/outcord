@@ -78,6 +78,17 @@
   #app {
     @apply w-full m-0 p-0;
   }
+
+  /* Focus indicators for accessibility */
+  button:focus-visible,
+  input:focus-visible,
+  [tabindex]:focus-visible {
+    @apply outline-none ring-2 ring-brand ring-offset-2 ring-offset-background;
+  }
+
+  a:focus-visible {
+    @apply outline-none ring-2 ring-cta ring-offset-2 ring-offset-background;
+  }
 }
 
 @layer components {
@@ -154,6 +165,16 @@
   }
 }
 
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
 .animate-fade-in {
   animation: fade-in 0.3s ease-in-out;
 }
@@ -164,4 +185,8 @@
 
 .animate-slide-down {
   animation: slide-down 0.3s ease-out;
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }

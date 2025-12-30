@@ -1,11 +1,13 @@
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, inject } from 'vue'
 import type { AuthMethod } from '../types/app'
 import type { DiscordGuild, DiscordChannel } from '../types/discord'
 import type { ExportSettings } from '../components/ExportModal.vue'
 import { buildExportData } from '../utils/discord-api'
 import { formatExportData } from '../utils/export-formatters'
+import type { useToast } from './useToast'
 
 export function useDiscord() {
+  const toast = inject<ReturnType<typeof useToast>>('toast')
   const isAuthenticated = ref(false)
   const authMethod = ref<AuthMethod | null>(null)
   const tokenPreview = ref<string | null>(null)
@@ -117,7 +119,7 @@ export function useDiscord() {
       })
 
       if (filePath) {
-        alert(`Channels exported successfully to:\n${filePath}`)
+        toast?.success(`Channels exported successfully to: ${filePath}`, 6000)
       }
     } catch (err) {
       if (err instanceof Error && err.message.includes('canceled')) {
