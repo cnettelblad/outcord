@@ -97,60 +97,67 @@ function getDisplayName(): string {
       <!-- Header -->
       <header class="sticky top-[40px] z-40 bg-surface border-b border-surface-lighter">
         <div class="max-w-7xl mx-auto px-6 py-3">
-          <div class="flex items-center justify-end gap-4">
-            <!-- Auth Indicator -->
-            <div
-              class="flex items-center gap-3 px-4 py-2 rounded-lg bg-surface-light border border-surface-lighter"
-            >
-              <!-- User Avatar -->
-              <div
-                class="w-8 h-8 rounded-full bg-background-lighter flex items-center justify-center overflow-hidden flex-shrink-0"
-              >
-                <img
-                  v-if="discord.user.value && getUserAvatarUrl(discord.user.value.id, discord.user.value.avatar)"
-                  :src="getUserAvatarUrl(discord.user.value.id, discord.user.value.avatar)!"
-                  :alt="getDisplayName()"
-                  class="w-full h-full object-cover"
-                />
-                <span v-else class="text-xs font-bold text-text-secondary">
-                  {{ getDisplayName().charAt(0).toUpperCase() }}
-                </span>
-              </div>
-
-              <!-- User Info -->
-              <div class="flex flex-col">
-                <span class="text-sm font-medium text-text-primary">
-                  {{ getDisplayName() }}
-                </span>
-                <span class="text-xs text-text-muted">
-                  {{ discord.authMethod.value === 'bot' ? 'Bot Account' : 'User Account' }}
-                </span>
-              </div>
+          <div class="flex items-center justify-between gap-6">
+            <!-- Server Selector -->
+            <div class="flex-1 max-w-md">
+              <ServerSelector
+                :guilds="discord.guilds.value"
+                :selected-guild-id="discord.selectedGuildId.value"
+                :is-loading="discord.isLoading.value"
+                :show-label="false"
+                @select-server="handleSelectServer"
+              />
             </div>
 
-            <!-- Logout Button -->
-            <button
-              type="button"
-              class="px-4 py-2 rounded-lg font-semibold text-brand border-2 border-brand hover:bg-brand hover:text-white cursor-pointer transition-all duration-200"
-              @click="discord.logout"
-            >
-              Logout
-            </button>
+            <!-- Right Side: Auth & Logout -->
+            <div class="flex items-center gap-4">
+              <!-- Auth Indicator -->
+              <div
+                class="flex items-center gap-3 px-4 py-2 rounded-lg bg-surface-light border border-surface-lighter"
+              >
+                <!-- User Avatar -->
+                <div
+                  class="w-8 h-8 rounded-full bg-background-lighter flex items-center justify-center overflow-hidden flex-shrink-0"
+                >
+                  <img
+                    v-if="discord.user.value && getUserAvatarUrl(discord.user.value.id, discord.user.value.avatar)"
+                    :src="getUserAvatarUrl(discord.user.value.id, discord.user.value.avatar)!"
+                    :alt="getDisplayName()"
+                    class="w-full h-full object-cover"
+                  />
+                  <span v-else class="text-xs font-bold text-text-secondary">
+                    {{ getDisplayName().charAt(0).toUpperCase() }}
+                  </span>
+                </div>
+
+                <!-- User Info -->
+                <div class="flex flex-col">
+                  <span class="text-sm font-medium text-text-primary">
+                    {{ getDisplayName() }}
+                  </span>
+                  <span class="text-xs text-text-muted">
+                    {{ discord.authMethod.value === 'bot' ? 'Bot Account' : 'User Account' }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Logout Button -->
+              <button
+                type="button"
+                class="px-4 py-2 rounded-lg font-semibold text-brand border-2 border-brand hover:bg-brand hover:text-white cursor-pointer transition-all duration-200"
+                @click="discord.logout"
+              >
+                Logout
+              </button>
+            </div>
           </div>
         </div>
       </header>
 
       <!-- Main Content -->
       <main class="flex-1 max-w-7xl w-full mx-auto px-6 py-8 space-y-6">
-        <!-- Control Panel -->
-        <div class="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-6 items-end">
-          <ServerSelector
-            :guilds="discord.guilds.value"
-            :selected-guild-id="discord.selectedGuildId.value"
-            :is-loading="discord.isLoading.value"
-            @select-server="handleSelectServer"
-          />
-
+        <!-- Export Button -->
+        <div class="flex justify-end">
           <ExportButton
             :disabled="!canExport"
             :is-loading="discord.isLoading.value"

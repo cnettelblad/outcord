@@ -2,11 +2,17 @@
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import type { DiscordGuild } from '../types/discord'
 
-const props = defineProps<{
-  guilds: DiscordGuild[]
-  selectedGuildId: string | null
-  isLoading: boolean
-}>()
+const props = withDefaults(
+  defineProps<{
+    guilds: DiscordGuild[]
+    selectedGuildId: string | null
+    isLoading: boolean
+    showLabel?: boolean
+  }>(),
+  {
+    showLabel: true,
+  }
+)
 
 const emit = defineEmits<{
   selectServer: [guildId: string]
@@ -82,8 +88,10 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="space-y-2">
-    <label class="block text-sm font-semibold text-text-primary"> Select Server </label>
+  <div :class="showLabel ? 'space-y-2' : ''">
+    <label v-if="showLabel" class="block text-sm font-semibold text-text-primary">
+      Select Server
+    </label>
     <div ref="dropdownRef" class="relative custom-dropdown">
       <!-- Dropdown Button -->
       <button
