@@ -1,8 +1,10 @@
 import Store from 'electron-store'
+import type { DiscordUser } from './discord-service.js'
 
-interface StoredAuth {
+export interface StoredAuth {
   method: 'bot' | 'user'
   token: string
+  user: DiscordUser
 }
 
 const store = new Store<{ auth: StoredAuth | null }>({
@@ -10,8 +12,8 @@ const store = new Store<{ auth: StoredAuth | null }>({
   encryptionKey: 'outcord-encryption-key-2024',
 })
 
-export function saveToken(method: 'bot' | 'user', token: string): void {
-  store.set('auth', { method, token })
+export function saveToken(method: 'bot' | 'user', token: string, user: DiscordUser): void {
+  store.set('auth', { method, token, user })
 }
 
 export function getToken(): StoredAuth | null {

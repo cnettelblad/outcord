@@ -53,6 +53,16 @@ async function handleExportWithSettings(settings: ExportSettings) {
   showExportModal.value = false
   await discord.exportChannels(settings)
 }
+
+function getUserAvatarUrl(userId: string, avatar: string | null): string | null {
+  if (!avatar) return null
+  return `https://cdn.discordapp.com/avatars/${userId}/${avatar}.png?size=64`
+}
+
+function getDisplayName(): string {
+  if (!discord.user.value) return 'Unknown'
+  return discord.user.value.global_name || discord.user.value.username
+}
 </script>
 
 <template>
@@ -90,12 +100,32 @@ async function handleExportWithSettings(settings: ExportSettings) {
           <div class="flex items-center justify-end gap-4">
             <!-- Auth Indicator -->
             <div
-              class="flex items-center gap-2 px-4 py-2 rounded-lg bg-surface-light border border-surface-lighter"
+              class="flex items-center gap-3 px-4 py-2 rounded-lg bg-surface-light border border-surface-lighter"
             >
-              <span class="text-lg">{{ discord.authMethod.value === 'bot' ? '🤖' : '👤' }}</span>
-              <span class="text-sm text-text-secondary font-mono">
-                {{ discord.tokenPreview.value }}
-              </span>
+              <!-- User Avatar -->
+              <div
+                class="w-8 h-8 rounded-full bg-background-lighter flex items-center justify-center overflow-hidden flex-shrink-0"
+              >
+                <img
+                  v-if="discord.user.value && getUserAvatarUrl(discord.user.value.id, discord.user.value.avatar)"
+                  :src="getUserAvatarUrl(discord.user.value.id, discord.user.value.avatar)!"
+                  :alt="getDisplayName()"
+                  class="w-full h-full object-cover"
+                />
+                <span v-else class="text-xs font-bold text-text-secondary">
+                  {{ getDisplayName().charAt(0).toUpperCase() }}
+                </span>
+              </div>
+
+              <!-- User Info -->
+              <div class="flex flex-col">
+                <span class="text-sm font-medium text-text-primary">
+                  {{ getDisplayName() }}
+                </span>
+                <span class="text-xs text-text-muted">
+                  {{ discord.authMethod.value === 'bot' ? 'Bot Account' : 'User Account' }}
+                </span>
+              </div>
             </div>
 
             <!-- Logout Button -->

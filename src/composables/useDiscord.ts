@@ -2,6 +2,7 @@ import { ref, onMounted, inject } from 'vue'
 import type { AuthMethod } from '../types/app'
 import type { DiscordGuild, DiscordChannel } from '../types/discord'
 import type { ExportSettings } from '../components/ExportModal.vue'
+import type { DiscordUser } from '../vite-env'
 import { buildExportData } from '../utils/discord-api'
 import { formatExportData } from '../utils/export-formatters'
 import type { useToast } from './useToast'
@@ -11,6 +12,7 @@ export function useDiscord() {
   const isAuthenticated = ref(false)
   const authMethod = ref<AuthMethod | null>(null)
   const tokenPreview = ref<string | null>(null)
+  const user = ref<DiscordUser | null>(null)
 
   const selectedGuildId = ref<string | null>(null)
   const selectedGuild = ref<DiscordGuild | null>(null)
@@ -25,18 +27,19 @@ export function useDiscord() {
       error.value = null
       isLoading.value = true
 
-      const isValid = await window.electronAPI?.validateToken(token, method)
+      const userData = await window.electronAPI?.validateToken(token, method)
 
-      if (!isValid) {
+      if (!userData) {
         error.value = 'Invalid token. Please check and try again.'
         return false
       }
 
-      await window.electronAPI?.saveToken(method, token)
+      await window.electronAPI?.saveToken(method, token, userData)
 
       isAuthenticated.value = true
       authMethod.value = method
       tokenPreview.value = `${token.slice(0, 4)}...${token.slice(-4)}`
+      user.value = userData
 
       await loadGuilds()
 
@@ -138,6 +141,7 @@ export function useDiscord() {
     isAuthenticated.value = false
     authMethod.value = null
     tokenPreview.value = null
+    user.value = null
     selectedGuildId.value = null
     selectedGuild.value = null
     guilds.value = []
@@ -150,10 +154,11 @@ export function useDiscord() {
     try {
       const stored = await window.electronAPI?.getStoredAuth()
 
-      if (stored && stored.method && stored.tokenPreview) {
+      if (stored && stored.method && stored.tokenPreview && stored.user) {
         isAuthenticated.value = true
         authMethod.value = stored.method
         tokenPreview.value = stored.tokenPreview
+        user.value = stored.user
 
         await loadGuilds()
       }
@@ -167,6 +172,7 @@ export function useDiscord() {
     isAuthenticated,
     authMethod,
     tokenPreview,
+    user,
     selectedGuildId,
     selectedGuild,
     guilds,

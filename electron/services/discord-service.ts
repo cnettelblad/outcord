@@ -1,5 +1,14 @@
 const DISCORD_API_BASE = 'https://discord.com/api/v10'
 
+export interface DiscordUser {
+  id: string
+  username: string
+  discriminator: string
+  avatar: string | null
+  bot?: boolean
+  global_name?: string | null
+}
+
 interface DiscordGuild {
   id: string
   name: string
@@ -57,13 +66,15 @@ async function makeDiscordRequest<T>(
   return response.json() as Promise<T>
 }
 
-export async function validateToken(token: string, method: 'bot' | 'user'): Promise<boolean> {
+export async function validateToken(
+  token: string,
+  method: 'bot' | 'user'
+): Promise<DiscordUser | null> {
   try {
-    const endpoint = method === 'bot' ? '/users/@me' : '/users/@me'
-    await makeDiscordRequest(endpoint, token, method)
-    return true
+    const user = await makeDiscordRequest<DiscordUser>('/users/@me', token, method)
+    return user
   } catch {
-    return false
+    return null
   }
 }
 

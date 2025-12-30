@@ -8,8 +8,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   },
 
   // Auth
-  saveToken: (method: 'bot' | 'user', token: string) =>
-    ipcRenderer.invoke('auth:save-token', method, token),
+  saveToken: (method: 'bot' | 'user', token: string, user: unknown) =>
+    ipcRenderer.invoke('auth:save-token', method, token, user),
   validateToken: (token: string, method: 'bot' | 'user') =>
     ipcRenderer.invoke('auth:validate-token', token, method),
   clearToken: () => ipcRenderer.invoke('auth:clear-token'),

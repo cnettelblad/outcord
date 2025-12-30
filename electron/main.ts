@@ -67,10 +67,13 @@ function createWindow() {
 // IPC Handlers
 
 // Auth handlers
-ipcMain.handle('auth:save-token', (_event, method: 'bot' | 'user', token: string) => {
-  storageService.saveToken(method, token)
-  return true
-})
+ipcMain.handle(
+  'auth:save-token',
+  (_event, method: 'bot' | 'user', token: string, user: unknown) => {
+    storageService.saveToken(method, token, user as ReturnType<typeof discordService.validateToken>)
+    return true
+  }
+)
 
 ipcMain.handle('auth:validate-token', async (_event, token: string, method: 'bot' | 'user') => {
   return discordService.validateToken(token, method)
@@ -88,6 +91,7 @@ ipcMain.handle('auth:get-stored', () => {
   return {
     method: auth.method,
     tokenPreview: `${auth.token.slice(0, 4)}...${auth.token.slice(-4)}`,
+    user: auth.user,
   }
 })
 
