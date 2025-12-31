@@ -81,17 +81,14 @@ async function handleExportWithSettings(settings: ExportSettings) {
       />
 
       <!-- Main App -->
-      <div v-else class="flex flex-col min-h-screen">
+      <div v-else class="flex flex-col h-screen overflow-hidden">
         <!-- Custom Title Bar (Fixed) -->
-        <div class="fixed top-0 left-0 right-0 z-50">
+        <div class="shrink-0">
           <TitleBar />
         </div>
 
-        <!-- Spacer for titlebar -->
-        <div class="h-10"></div>
-
         <!-- Header -->
-        <header class="sticky top-10 z-40 bg-surface border-b border-surface-lighter">
+        <header class="shrink-0 bg-surface border-b border-surface-lighter">
           <div class="max-w-7xl mx-auto px-6 py-3">
             <div class="flex items-center justify-between gap-6">
               <!-- Left Side: DM Button & Server Selector -->
@@ -203,22 +200,24 @@ async function handleExportWithSettings(settings: ExportSettings) {
         </header>
 
         <!-- Main Content -->
-        <main class="flex-1 max-w-7xl w-full mx-auto px-6 py-8">
-          <!-- Channel List -->
-          <div class="animate-fade-in">
-            <ChannelList
-              :channels="discord.channels.value"
-              :dmChannels="discord.dmChannels.value"
-              :isDMMode="discord.isDMMode.value"
-              :isLoading="discord.isLoading.value"
-            />
+        <main class="flex-1 overflow-hidden">
+          <div class="max-w-7xl h-full mx-auto px-6 py-8">
+            <!-- Channel List -->
+            <div class="h-full animate-fade-in">
+              <ChannelList
+                :channels="discord.channels.value"
+                :dmChannels="discord.dmChannels.value"
+                :isDMMode="discord.isDMMode.value"
+                :isLoading="discord.isLoading.value"
+              />
+            </div>
           </div>
         </main>
 
         <!-- Footer -->
         <footer
           v-if="discord.selectedGuild.value"
-          class="sticky bottom-0 bg-surface/80 backdrop-blur-lg border-t border-surface-lighter shadow-elevation-1"
+          class="shrink-0 bg-surface/80 backdrop-blur-lg border-t border-surface-lighter shadow-elevation-1"
         >
           <div class="max-w-7xl mx-auto px-6 py-4">
             <div class="flex items-center justify-center gap-3 text-sm">

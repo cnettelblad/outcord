@@ -26,47 +26,51 @@ const sortedDMChannels = computed(() => sortDMChannelsByLastMessage(props.dmChan
 
 <template>
   <div
-    class="bg-surface rounded-2xl border border-surface-lighter shadow-elevation-2 overflow-hidden"
+    class="h-full bg-surface rounded-2xl border border-surface-lighter shadow-elevation-2 overflow-hidden flex flex-col"
   >
     <!-- Loading State -->
-    <div v-if="isLoading" class="p-12 text-center animate-fade-in">
-      <div
-        class="inline-block w-12 h-12 border-4 border-brand border-t-transparent rounded-full animate-spin mb-4"
-      ></div>
-      <p class="text-text-secondary animate-pulse">Loading channels...</p>
+    <div v-if="isLoading" class="flex-1 flex items-center justify-center p-12 animate-fade-in">
+      <div class="text-center">
+        <div
+          class="inline-block w-12 h-12 border-4 border-brand border-t-transparent rounded-full animate-spin mb-4"
+        ></div>
+        <p class="text-text-secondary animate-pulse">Loading channels...</p>
+      </div>
     </div>
 
     <!-- Empty State -->
     <div
       v-else-if="(isDMMode && dmChannels.length === 0) || (!isDMMode && channels.length === 0)"
-      class="p-16 text-center animate-fade-in"
+      class="flex-1 flex items-center justify-center p-16 animate-fade-in"
     >
-      <div
-        class="inline-flex items-center justify-center w-24 h-24 rounded-full bg-linear-to-br from-brand/20 to-cta/20 mb-6"
-      >
-        <svg class="w-12 h-12 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"
-          />
-        </svg>
+      <div class="text-center">
+        <div
+          class="inline-flex items-center justify-center w-24 h-24 rounded-full bg-linear-to-br from-brand/20 to-cta/20 mb-6"
+        >
+          <svg class="w-12 h-12 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"
+            />
+          </svg>
+        </div>
+        <h3 class="text-text-primary text-xl font-bold mb-2">
+          {{ isDMMode ? 'No direct messages' : 'No channels yet' }}
+        </h3>
+        <p class="text-text-muted text-sm max-w-sm mx-auto">
+          {{
+            isDMMode
+              ? 'You have no direct message conversations'
+              : 'Select a server from the dropdown above to view and export its channels'
+          }}
+        </p>
       </div>
-      <h3 class="text-text-primary text-xl font-bold mb-2">
-        {{ isDMMode ? 'No direct messages' : 'No channels yet' }}
-      </h3>
-      <p class="text-text-muted text-sm max-w-sm mx-auto">
-        {{
-          isDMMode
-            ? 'You have no direct message conversations'
-            : 'Select a server from the dropdown above to view and export its channels'
-        }}
-      </p>
     </div>
 
     <!-- DM List -->
-    <div v-else-if="isDMMode" class="max-h-150 overflow-y-auto custom-scrollbar">
+    <div v-else-if="isDMMode" class="flex-1 overflow-y-auto custom-scrollbar">
       <!-- DM Count Header -->
       <div
         class="sticky top-0 bg-surface-light/95 backdrop-blur-sm px-6 py-4 border-b border-surface-lighter z-10"
@@ -123,7 +127,7 @@ const sortedDMChannels = computed(() => sortDMChannelsByLastMessage(props.dmChan
     </div>
 
     <!-- Channels List -->
-    <div v-else class="max-h-150 overflow-y-auto custom-scrollbar">
+    <div v-else class="flex-1 overflow-y-auto custom-scrollbar">
       <!-- Channel Count Header -->
       <div
         class="sticky top-0 bg-surface-light/95 backdrop-blur-sm px-6 py-4 border-b border-surface-lighter z-10"

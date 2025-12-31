@@ -159,7 +159,7 @@ export function useDiscord() {
       })
 
       if (filePath) {
-        toast?.success(`Channels exported successfully to: ${filePath}`, 6000)
+        toast?.success(`Channels exported successfully to: ${filePath}`)
       }
     } catch (err) {
       if (err instanceof Error && err.message.includes('canceled')) {
