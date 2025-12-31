@@ -21,10 +21,7 @@ export function getGuildIconUrl(
   return `${CDN_BASE}/icons/${guildId}/${icon}.png?size=${size}`
 }
 
-export function getDMChannelAvatarUrl(
-  dm: DiscordDMChannel,
-  size: number = 64
-): string | null {
+export function getDMChannelAvatarUrl(dm: DiscordDMChannel, size: number = 64): string | null {
   if (dm.type === 3 || !dm.recipients[0]) return null
   const recipient = dm.recipients[0]
   return getAvatarUrl(recipient.id, recipient.avatar, size)

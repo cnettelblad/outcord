@@ -12,6 +12,11 @@ const sizeClass = computed(() => props.size || 'w-5 h-5')
 </script>
 
 <template>
-  <span v-if="svgContent" :class="sizeClass" class="inline-block text-text-muted" v-html="svgContent"></span>
+  <span
+    v-if="svgContent"
+    :class="sizeClass"
+    class="inline-block text-text-muted"
+    v-html="svgContent"
+  ></span>
   <span v-else :class="sizeClass" class="inline-block text-text-muted">•</span>
 </template>

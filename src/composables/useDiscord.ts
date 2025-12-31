@@ -1,4 +1,4 @@
-import { ref, onMounted, inject, computed } from 'vue'
+import { ref, onMounted, inject } from 'vue'
 import type { AuthMethod } from '../types/app'
 import type { DiscordGuild, DiscordChannel } from '../types/discord'
 import type { ExportSettings } from '../components/ExportModal.vue'

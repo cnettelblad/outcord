@@ -7,9 +7,7 @@ export interface ChannelGroup {
 }
 
 export function groupChannelsByCategory(channels: DiscordChannel[]): ChannelGroup {
-  const categories = channels
-    .filter((ch) => ch.type === 4)
-    .sort((a, b) => a.position - b.position)
+  const categories = channels.filter((ch) => ch.type === 4).sort((a, b) => a.position - b.position)
 
   const regularChannels = channels.filter((ch) => ch.type !== 4)
 

@@ -42,12 +42,8 @@ const emit = defineEmits<{
           v-else
           class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"
         ></div>
-        <span>{{ isLoading ? 'Exporting...' : 'Export to JSON' }}</span>
+        <span>{{ isLoading ? 'Loading...' : 'Export' }}</span>
       </span>
     </button>
-
-    <p v-if="disabled && !isLoading" class="text-xs text-text-muted text-center">
-      Select a server and load channels to export
-    </p>
   </div>
 </template>
