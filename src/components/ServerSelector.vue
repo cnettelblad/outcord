@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import type { DiscordGuild } from '../types/discord'
+import { getGuildIconUrl } from '../utils/discord-urls'
 
 const props = withDefaults(
   defineProps<{
@@ -54,11 +55,6 @@ function selectGuild(guild: DiscordGuild) {
   isOpen.value = false
 }
 
-function getGuildIconUrl(guild: DiscordGuild): string | null {
-  if (!guild.icon) return null
-  return `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png?size=64`
-}
-
 // Close dropdown when clicking outside
 function handleClickOutside(event: MouseEvent) {
   const target = event.target as HTMLElement
@@ -107,8 +103,8 @@ onUnmounted(() => {
             class="w-8 h-8 rounded-full bg-background-lighter flex items-center justify-center overflow-hidden flex-shrink-0"
           >
             <img
-              v-if="getGuildIconUrl(selectedGuild)"
-              :src="getGuildIconUrl(selectedGuild)!"
+              v-if="getGuildIconUrl(selectedGuild.id, selectedGuild.icon)"
+              :src="getGuildIconUrl(selectedGuild.id, selectedGuild.icon)!"
               :alt="selectedGuild.name"
               class="w-full h-full object-cover"
             />
@@ -164,8 +160,8 @@ onUnmounted(() => {
             class="w-8 h-8 rounded-full bg-background-lighter flex items-center justify-center overflow-hidden flex-shrink-0"
           >
             <img
-              v-if="getGuildIconUrl(guild)"
-              :src="getGuildIconUrl(guild)!"
+              v-if="getGuildIconUrl(guild.id, guild.icon)"
+              :src="getGuildIconUrl(guild.id, guild.icon)!"
               :alt="guild.name"
               class="w-full h-full object-cover"
             />

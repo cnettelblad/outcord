@@ -11,6 +11,8 @@ import ExportModal, { type ExportSettings } from './components/ExportModal.vue'
 import Toast from './components/Toast.vue'
 import type { AuthMethod } from './types/app'
 import { serverChannelsContext } from './utils/export-contexts'
+import { getAvatarUrl } from './utils/discord-urls'
+import { getDisplayName } from './utils/formatters/user-formatters'
 
 const discord = useDiscord()
 const toast = useToast()
@@ -56,16 +58,6 @@ function handleExport() {
 async function handleExportWithSettings(settings: ExportSettings) {
   showExportModal.value = false
   await discord.exportChannels(settings)
-}
-
-function getUserAvatarUrl(userId: string, avatar: string | null): string | null {
-  if (!avatar) return null
-  return `https://cdn.discordapp.com/avatars/${userId}/${avatar}.png?size=64`
-}
-
-function getDisplayName(): string {
-  if (!discord.user.value) return 'Unknown'
-  return discord.user.value.global_name || discord.user.value.username
 }
 </script>
 
@@ -148,20 +140,20 @@ function getDisplayName(): string {
                   class="w-8 h-8 rounded-full bg-background-lighter flex items-center justify-center overflow-hidden flex-shrink-0"
                 >
                   <img
-                    v-if="discord.user.value && getUserAvatarUrl(discord.user.value.id, discord.user.value.avatar)"
-                    :src="getUserAvatarUrl(discord.user.value.id, discord.user.value.avatar)!"
-                    :alt="getDisplayName()"
+                    v-if="discord.user.value && getAvatarUrl(discord.user.value.id, discord.user.value.avatar)"
+                    :src="getAvatarUrl(discord.user.value.id, discord.user.value.avatar)!"
+                    :alt="getDisplayName(discord.user.value)"
                     class="w-full h-full object-cover"
                   />
                   <span v-else class="text-xs font-bold text-text-secondary">
-                    {{ getDisplayName().charAt(0).toUpperCase() }}
+                    {{ getDisplayName(discord.user.value).charAt(0).toUpperCase() }}
                   </span>
                 </div>
 
                 <!-- User Info -->
                 <div class="flex flex-col">
                   <span class="text-sm font-medium text-text-primary">
-                    {{ getDisplayName() }}
+                    {{ getDisplayName(discord.user.value) }}
                   </span>
                   <span class="text-xs text-text-muted">
                     {{ discord.authMethod.value === 'bot' ? 'Bot Account' : 'User Account' }}

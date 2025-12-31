@@ -3,6 +3,11 @@ import { computed } from 'vue'
 import type { DiscordChannel } from '../types/discord'
 import type { DiscordDMChannel } from '../vite-env'
 import { channelTypeToString } from '../utils/discord-api'
+import { getDMChannelAvatarUrl } from '../utils/discord-urls'
+import { getDMChannelName, getInitial } from '../utils/formatters/user-formatters'
+import { getChannelTypeIcon } from '../utils/discord-utils'
+import { formatDMLastMessageDate } from '../utils/formatters/date-formatters'
+import { groupChannelsByCategory, sortDMChannelsByLastMessage } from '../utils/discord/channel-grouping'
 
 const props = defineProps<{
   channels: DiscordChannel[]
@@ -11,107 +16,9 @@ const props = defineProps<{
   isLoading: boolean
 }>()
 
-const channelsByCategory = computed(() => {
-  // Sort categories by position
-  const categories = props.channels
-    .filter((ch) => ch.type === 4)
-    .sort((a, b) => a.position - b.position)
+const channelsByCategory = computed(() => groupChannelsByCategory(props.channels))
 
-  const regularChannels = props.channels.filter((ch) => ch.type !== 4)
-
-  const grouped = new Map<string, DiscordChannel[]>()
-
-  // Add uncategorized channels (sorted by position)
-  const uncategorized = regularChannels
-    .filter((ch) => !ch.parent_id)
-    .sort((a, b) => a.position - b.position)
-  if (uncategorized.length > 0) {
-    grouped.set('uncategorized', uncategorized)
-  }
-
-  // Group channels by category and sort by position
-  categories.forEach((category) => {
-    const channelsInCategory = regularChannels
-      .filter((ch) => ch.parent_id === category.id)
-      .sort((a, b) => a.position - b.position)
-    if (channelsInCategory.length > 0) {
-      grouped.set(category.id, channelsInCategory)
-    }
-  })
-
-  return { categories, grouped }
-})
-
-function getChannelTypeIcon(type: number): string {
-  const icons: Record<number, string> = {
-    0: '#',
-    2: '🔊',
-    4: '📁',
-    5: '📢',
-    13: '🎙️',
-    15: '💬',
-  }
-  return icons[type] || '•'
-}
-
-function getDMName(dm: DiscordDMChannel): string {
-  if (dm.type === 3) {
-    // Group DM
-    return dm.recipients.map((r) => r.global_name || r.username).join(', ')
-  }
-  // Direct DM
-  const recipient = dm.recipients[0]
-  return recipient?.global_name || recipient?.username || 'Unknown User'
-}
-
-function getDMAvatar(dm: DiscordDMChannel): string | null {
-  if (dm.type === 3 || !dm.recipients[0]) return null
-  const recipient = dm.recipients[0]
-  if (!recipient.avatar) return null
-  return `https://cdn.discordapp.com/avatars/${recipient.id}/${recipient.avatar}.png?size=64`
-}
-
-function getSnowflakeTimestamp(snowflake: string | null): number | null {
-  if (!snowflake) return null
-  const DISCORD_EPOCH = 1420070400000
-  const timestamp = Number(BigInt(snowflake) >> BigInt(22)) + DISCORD_EPOCH
-  return timestamp
-}
-
-function formatLastMessageDate(dm: DiscordDMChannel): string {
-  const timestamp = getSnowflakeTimestamp(dm.last_message_id)
-  if (!timestamp) return 'No messages'
-
-  const date = new Date(timestamp)
-  const now = new Date()
-  const diff = now.getTime() - date.getTime()
-
-  // Less than 1 day - show time
-  if (diff < 24 * 60 * 60 * 1000) {
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-  }
-
-  // Less than 7 days - show day name
-  if (diff < 7 * 24 * 60 * 60 * 1000) {
-    return date.toLocaleDateString([], { weekday: 'long' })
-  }
-
-  // Less than 1 year - show month and day
-  if (diff < 365 * 24 * 60 * 60 * 1000) {
-    return date.toLocaleDateString([], { month: 'short', day: 'numeric' })
-  }
-
-  // Show full date
-  return date.toLocaleDateString([], { year: 'numeric', month: 'short', day: 'numeric' })
-}
-
-const sortedDMChannels = computed(() => {
-  return [...props.dmChannels].sort((a, b) => {
-    const timestampA = getSnowflakeTimestamp(a.last_message_id) || 0
-    const timestampB = getSnowflakeTimestamp(b.last_message_id) || 0
-    return timestampB - timestampA // Descending order (most recent first)
-  })
-})
+const sortedDMChannels = computed(() => sortDMChannelsByLastMessage(props.dmChannels))
 </script>
 
 <template>
@@ -184,13 +91,13 @@ const sortedDMChannels = computed(() => {
             class="w-10 h-10 rounded-full bg-background-lighter flex items-center justify-center overflow-hidden flex-shrink-0"
           >
             <img
-              v-if="getDMAvatar(dm)"
-              :src="getDMAvatar(dm)!"
-              :alt="getDMName(dm)"
+              v-if="getDMChannelAvatarUrl(dm)"
+              :src="getDMChannelAvatarUrl(dm)!"
+              :alt="getDMChannelName(dm)"
               class="w-full h-full object-cover"
             />
             <span v-else class="text-sm font-bold text-text-secondary">
-              {{ getDMName(dm).charAt(0).toUpperCase() }}
+              {{ getInitial(getDMChannelName(dm)) }}
             </span>
           </div>
 
@@ -199,10 +106,10 @@ const sortedDMChannels = computed(() => {
             <span
               class="block font-medium text-text-primary group-hover:text-white transition-colors truncate"
             >
-              {{ getDMName(dm) }}
+              {{ getDMChannelName(dm) }}
             </span>
             <span class="block text-xs text-text-muted">
-              {{ formatLastMessageDate(dm) }}
+              {{ formatDMLastMessageDate(dm) }}
             </span>
           </div>
 
