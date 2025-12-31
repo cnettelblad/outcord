@@ -1,23 +1,14 @@
 /// <reference types="vite/client" />
 
 import type { AuthMethod } from './types/app'
-import type { DiscordGuild, DiscordChannel } from './types/discord'
+import type {
+  DiscordUser,
+  DiscordGuild,
+  DiscordChannel,
+  DiscordDMChannel,
+} from './types/discord'
 
-export interface DiscordUser {
-  id: string
-  username: string
-  discriminator: string
-  avatar: string | null
-  bot?: boolean
-  global_name?: string | null
-}
-
-export interface DiscordDMChannel {
-  id: string
-  type: 1 | 3 // 1 = DM, 3 = Group DM
-  last_message_id: string | null
-  recipients: DiscordUser[]
-}
+export type { DiscordUser, DiscordGuild, DiscordChannel, DiscordDMChannel }
 
 declare global {
   interface Window {

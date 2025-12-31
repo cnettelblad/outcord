@@ -1,5 +1,5 @@
 import Store from 'electron-store'
-import type { DiscordUser } from './discord-service.js'
+import type { DiscordUser } from '../../src/types/discord.js'
 
 export interface StoredAuth {
   method: 'bot' | 'user'

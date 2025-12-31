@@ -2,6 +2,15 @@
 
 export type ChannelType = 0 | 2 | 4 | 5 | 13 | 15 | 10 | 11 | 12 | 14 | 16
 
+export interface DiscordUser {
+  id: string
+  username: string
+  discriminator: string
+  avatar: string | null
+  bot?: boolean
+  global_name?: string | null
+}
+
 export interface DiscordChannel {
   id: string
   name: string
@@ -19,6 +28,13 @@ export interface DiscordGuild {
   name: string
   icon: string | null
   owner_id: string
+}
+
+export interface DiscordDMChannel {
+  id: string
+  type: 1 | 3
+  last_message_id: string | null
+  recipients: DiscordUser[]
 }
 
 export interface PermissionOverwrite {

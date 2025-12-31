@@ -1,44 +1,11 @@
+import type {
+  DiscordUser,
+  DiscordGuild,
+  DiscordChannel,
+  DiscordDMChannel,
+} from '../../src/types/discord.js'
+
 const DISCORD_API_BASE = 'https://discord.com/api/v10'
-
-export interface DiscordUser {
-  id: string
-  username: string
-  discriminator: string
-  avatar: string | null
-  bot?: boolean
-  global_name?: string | null
-}
-
-interface DiscordGuild {
-  id: string
-  name: string
-  icon: string | null
-  owner_id: string
-}
-
-interface DiscordChannel {
-  id: string
-  name: string
-  type: number
-  position: number
-  parent_id: string | null
-  topic?: string
-  nsfw?: boolean
-  rate_limit_per_user?: number
-  permission_overwrites?: Array<{
-    id: string
-    type: number
-    allow: string
-    deny: string
-  }>
-}
-
-export interface DiscordDMChannel {
-  id: string
-  type: 1 | 3 // 1 = DM, 3 = Group DM
-  last_message_id: string | null
-  recipients: DiscordUser[]
-}
 
 function getAuthHeader(token: string, method: 'bot' | 'user'): string {
   return method === 'bot' ? `Bot ${token}` : token
