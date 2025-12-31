@@ -7,6 +7,7 @@ import type {
   ExportedChannelData,
   ChannelType,
 } from '../types/discord'
+import { snowflakeToDate } from './discord-utils'
 
 const CHANNEL_TYPE_NAMES: Record<number, string> = {
   0: 'text',
@@ -98,12 +99,6 @@ export function parsePermissions(overwrite: PermissionOverwrite): PermissionExpo
   }
 }
 
-function getSnowflakeTimestamp(snowflake: string): string {
-  const DISCORD_EPOCH = 1420070400000
-  const timestamp = Number(BigInt(snowflake) >> BigInt(22)) + DISCORD_EPOCH
-  return new Date(timestamp).toISOString()
-}
-
 export function formatChannelForExport(
   channel: DiscordChannel,
   categoryMap: Map<string, { name: string; position: number }>
@@ -122,7 +117,7 @@ export function formatChannelForExport(
     nsfw: channel.nsfw || false,
     rateLimit: channel.rate_limit_per_user || null,
     permissionCount: (channel.permission_overwrites || []).length,
-    createdAt: getSnowflakeTimestamp(channel.id),
+    createdAt: snowflakeToDate(channel.id)?.toISOString() || '',
   }
 }
 
