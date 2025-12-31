@@ -100,7 +100,7 @@ onUnmounted(() => {
           <!-- Selected Guild Icon -->
           <div
             v-if="selectedGuild"
-            class="w-8 h-8 rounded-full bg-background-lighter flex items-center justify-center overflow-hidden flex-shrink-0"
+            class="w-8 h-8 rounded-full bg-background-lighter flex items-center justify-center overflow-hidden shrink-0"
           >
             <img
               v-if="getGuildIconUrl(selectedGuild.id, selectedGuild.icon)"
@@ -157,7 +157,7 @@ onUnmounted(() => {
         >
           <!-- Guild Icon -->
           <div
-            class="w-8 h-8 rounded-full bg-background-lighter flex items-center justify-center overflow-hidden flex-shrink-0"
+            class="w-8 h-8 rounded-full bg-background-lighter flex items-center justify-center overflow-hidden shrink-0"
           >
             <img
               v-if="getGuildIconUrl(guild.id, guild.icon)"
@@ -178,7 +178,7 @@ onUnmounted(() => {
           <!-- Selected Indicator -->
           <svg
             v-if="selectedGuildId === guild.id"
-            class="w-5 h-5 text-cta flex-shrink-0"
+            class="w-5 h-5 text-cta shrink-0"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"

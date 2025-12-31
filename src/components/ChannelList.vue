@@ -5,12 +5,12 @@ import type { DiscordDMChannel } from '../vite-env'
 import { channelTypeToString } from '../utils/discord-api'
 import { getDMChannelAvatarUrl } from '../utils/discord-urls'
 import { getDMChannelName, getInitial } from '../utils/formatters/user-formatters'
-import { getChannelTypeIcon } from '../utils/discord-utils'
 import { formatDMLastMessageDate } from '../utils/formatters/date-formatters'
 import {
   groupChannelsByCategory,
   sortDMChannelsByLastMessage,
 } from '../utils/discord/channel-grouping'
+import ChannelIcon from './ChannelIcon.vue'
 
 const props = defineProps<{
   channels: DiscordChannel[]
@@ -156,7 +156,7 @@ const sortedDMChannels = computed(() => sortDMChannelsByLastMessage(props.dmChan
               class="group flex items-center gap-3 px-3 py-2.5 rounded-lg bg-surface-light/50 hover:bg-surface-lighter hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer"
             >
               <!-- Channel Icon -->
-              <span class="text-lg shrink-0">{{ getChannelTypeIcon(channel.type) }}</span>
+              <ChannelIcon :type="channel.type" class="shrink-0" />
 
               <!-- Channel Name -->
               <span
@@ -203,7 +203,7 @@ const sortedDMChannels = computed(() => sortDMChannelsByLastMessage(props.dmChan
               class="group flex items-center gap-3 px-3 py-2.5 rounded-lg bg-surface-light/50 hover:bg-surface-lighter hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer"
             >
               <!-- Channel Icon -->
-              <span class="text-lg shrink-0">{{ getChannelTypeIcon(channel.type) }}</span>
+              <ChannelIcon :type="channel.type" class="shrink-0" />
 
               <!-- Channel Name -->
               <span
