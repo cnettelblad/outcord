@@ -19,7 +19,7 @@ const emit = defineEmits<{
     >
       <!-- Background Animation -->
       <span
-        class="absolute inset-0 bg-gradient-to-r from-cta-light to-cta opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+        class="absolute inset-0 bg-linear-to-r from-cta-light to-cta opacity-0 group-hover:opacity-100 transition-opacity duration-300"
       ></span>
 
       <!-- Button Content -->

@@ -39,7 +39,7 @@ const sortedDMChannels = computed(() => sortDMChannelsByLastMessage(props.dmChan
       class="p-16 text-center animate-fade-in"
     >
       <div
-        class="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gradient-to-br from-brand/20 to-cta/20 mb-6"
+        class="inline-flex items-center justify-center w-24 h-24 rounded-full bg-linear-to-br from-brand/20 to-cta/20 mb-6"
       >
         <svg
           class="w-12 h-12 text-brand"
@@ -68,7 +68,7 @@ const sortedDMChannels = computed(() => sortDMChannelsByLastMessage(props.dmChan
     </div>
 
     <!-- DM List -->
-    <div v-else-if="isDMMode" class="max-h-[600px] overflow-y-auto custom-scrollbar">
+    <div v-else-if="isDMMode" class="max-h-150 overflow-y-auto custom-scrollbar">
       <!-- DM Count Header -->
       <div
         class="sticky top-0 bg-surface-light/95 backdrop-blur-sm px-6 py-4 border-b border-surface-lighter z-10"
@@ -88,7 +88,7 @@ const sortedDMChannels = computed(() => sortDMChannelsByLastMessage(props.dmChan
         >
           <!-- DM Avatar -->
           <div
-            class="w-10 h-10 rounded-full bg-background-lighter flex items-center justify-center overflow-hidden flex-shrink-0"
+            class="w-10 h-10 rounded-full bg-background-lighter flex items-center justify-center overflow-hidden shrink-0"
           >
             <img
               v-if="getDMChannelAvatarUrl(dm)"
@@ -116,7 +116,7 @@ const sortedDMChannels = computed(() => sortDMChannelsByLastMessage(props.dmChan
           <!-- DM Type Badge -->
           <span
             v-if="dm.type === 3"
-            class="flex-shrink-0 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-md bg-background-lighter text-text-muted"
+            class="shrink-0 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-md bg-background-lighter text-text-muted"
           >
             Group
           </span>
@@ -125,7 +125,7 @@ const sortedDMChannels = computed(() => sortDMChannelsByLastMessage(props.dmChan
     </div>
 
     <!-- Channels List -->
-    <div v-else class="max-h-[600px] overflow-y-auto custom-scrollbar">
+    <div v-else class="max-h-150 overflow-y-auto custom-scrollbar">
       <!-- Channel Count Header -->
       <div
         class="sticky top-0 bg-surface-light/95 backdrop-blur-sm px-6 py-4 border-b border-surface-lighter z-10"
@@ -158,7 +158,7 @@ const sortedDMChannels = computed(() => sortDMChannelsByLastMessage(props.dmChan
               class="group flex items-center gap-3 px-3 py-2.5 rounded-lg bg-surface-light/50 hover:bg-surface-lighter hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer"
             >
               <!-- Channel Icon -->
-              <span class="text-lg flex-shrink-0">{{ getChannelTypeIcon(channel.type) }}</span>
+              <span class="text-lg shrink-0">{{ getChannelTypeIcon(channel.type) }}</span>
 
               <!-- Channel Name -->
               <span
@@ -205,7 +205,7 @@ const sortedDMChannels = computed(() => sortDMChannelsByLastMessage(props.dmChan
               class="group flex items-center gap-3 px-3 py-2.5 rounded-lg bg-surface-light/50 hover:bg-surface-lighter hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer"
             >
               <!-- Channel Icon -->
-              <span class="text-lg flex-shrink-0">{{ getChannelTypeIcon(channel.type) }}</span>
+              <span class="text-lg shrink-0">{{ getChannelTypeIcon(channel.type) }}</span>
 
               <!-- Channel Name -->
               <span
