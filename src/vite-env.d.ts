@@ -1,12 +1,7 @@
 /// <reference types="vite/client" />
 
 import type { AuthMethod } from './types/app'
-import type {
-  DiscordUser,
-  DiscordGuild,
-  DiscordChannel,
-  DiscordDMChannel,
-} from './types/discord'
+import type { DiscordUser, DiscordGuild, DiscordChannel, DiscordDMChannel } from './types/discord'
 
 export type { DiscordUser, DiscordGuild, DiscordChannel, DiscordDMChannel }
 

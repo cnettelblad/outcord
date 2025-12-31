@@ -7,7 +7,10 @@ import { getDMChannelAvatarUrl } from '../utils/discord-urls'
 import { getDMChannelName, getInitial } from '../utils/formatters/user-formatters'
 import { getChannelTypeIcon } from '../utils/discord-utils'
 import { formatDMLastMessageDate } from '../utils/formatters/date-formatters'
-import { groupChannelsByCategory, sortDMChannelsByLastMessage } from '../utils/discord/channel-grouping'
+import {
+  groupChannelsByCategory,
+  sortDMChannelsByLastMessage,
+} from '../utils/discord/channel-grouping'
 
 const props = defineProps<{
   channels: DiscordChannel[]
@@ -41,12 +44,7 @@ const sortedDMChannels = computed(() => sortDMChannelsByLastMessage(props.dmChan
       <div
         class="inline-flex items-center justify-center w-24 h-24 rounded-full bg-linear-to-br from-brand/20 to-cta/20 mb-6"
       >
-        <svg
-          class="w-12 h-12 text-brand"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
+        <svg class="w-12 h-12 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             stroke-linecap="round"
             stroke-linejoin="round"

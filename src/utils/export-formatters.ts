@@ -49,7 +49,7 @@ function formatAsCSV(data: ExportedChannelData): string {
   // Add data rows
   data.channels.forEach((channel) => {
     const row = headers.map((header) => {
-      const value = (channel as Record<string, unknown>)[header]
+      const value = (channel as unknown as Record<string, unknown>)[header]
       return escapeCSV(formatValueForCSV(value))
     })
     csvRows.push(row.join(','))

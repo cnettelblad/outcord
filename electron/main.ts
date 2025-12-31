@@ -1,6 +1,7 @@
 import { app, BrowserWindow, ipcMain } from 'electron'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
+import type { DiscordUser } from '../src/types/discord.js'
 import * as storageService from './services/storage-service.js'
 import * as discordService from './services/discord-service.js'
 import * as exportService from './services/export-service.js'
@@ -70,7 +71,7 @@ function createWindow() {
 ipcMain.handle(
   'auth:save-token',
   (_event, method: 'bot' | 'user', token: string, user: unknown) => {
-    storageService.saveToken(method, token, user as ReturnType<typeof discordService.validateToken>)
+    storageService.saveToken(method, token, user as DiscordUser)
     return true
   }
 )
