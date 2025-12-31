@@ -1,4 +1,5 @@
 import { ref } from 'vue'
+import { TOAST_DURATIONS } from '../constants/app'
 
 export type ToastType = 'success' | 'error' | 'info' | 'warning'
 
@@ -12,7 +13,7 @@ const toasts = ref<Toast[]>([])
 let nextId = 0
 
 export function useToast() {
-  function showToast(message: string, type: ToastType = 'info', duration = 4000) {
+  function showToast(message: string, type: ToastType = 'info', duration = TOAST_DURATIONS.INFO) {
     const id = nextId++
     const toast: Toast = { message, type, id }
 
@@ -34,19 +35,19 @@ export function useToast() {
     }
   }
 
-  function success(message: string, duration = 4000) {
+  function success(message: string, duration = TOAST_DURATIONS.SUCCESS) {
     return showToast(message, 'success', duration)
   }
 
-  function error(message: string, duration = 5000) {
+  function error(message: string, duration = TOAST_DURATIONS.ERROR) {
     return showToast(message, 'error', duration)
   }
 
-  function info(message: string, duration = 4000) {
+  function info(message: string, duration = TOAST_DURATIONS.INFO) {
     return showToast(message, 'info', duration)
   }
 
-  function warning(message: string, duration = 4000) {
+  function warning(message: string, duration = TOAST_DURATIONS.WARNING) {
     return showToast(message, 'warning', duration)
   }
 
