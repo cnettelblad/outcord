@@ -11,17 +11,65 @@ import {
   sortDMChannelsByLastMessage,
 } from '../utils/discord/channel-grouping'
 import ChannelIcon from './ChannelIcon.vue'
+import Checkbox from './Checkbox.vue'
 
 const props = defineProps<{
   channels: DiscordChannel[]
   dmChannels: DiscordDMChannel[]
   isDMMode: boolean
   isLoading: boolean
+  selectedChannelIds: Set<string>
+  selectedDMIds: Set<string>
+}>()
+
+const emit = defineEmits<{
+  toggleChannel: [id: string]
+  toggleDM: [id: string]
+  selectAllChannels: []
+  deselectAllChannels: []
+  selectAllDMs: []
+  deselectAllDMs: []
 }>()
 
 const channelsByCategory = computed(() => groupChannelsByCategory(props.channels))
 
 const sortedDMChannels = computed(() => sortDMChannelsByLastMessage(props.dmChannels))
+
+const selectableChannels = computed(() => props.channels.filter((ch) => ch.type !== 4))
+
+const allChannelsSelected = computed(() => {
+  if (selectableChannels.value.length === 0) return false
+  return selectableChannels.value.every((ch) => props.selectedChannelIds.has(ch.id))
+})
+
+const someChannelsSelected = computed(() => {
+  return selectableChannels.value.some((ch) => props.selectedChannelIds.has(ch.id)) && !allChannelsSelected.value
+})
+
+const allDMsSelected = computed(() => {
+  if (props.dmChannels.length === 0) return false
+  return props.dmChannels.every((dm) => props.selectedDMIds.has(dm.id))
+})
+
+const someDMsSelected = computed(() => {
+  return props.dmChannels.some((dm) => props.selectedDMIds.has(dm.id)) && !allDMsSelected.value
+})
+
+function toggleAllChannels() {
+  if (allChannelsSelected.value) {
+    emit('deselectAllChannels')
+  } else {
+    emit('selectAllChannels')
+  }
+}
+
+function toggleAllDMs() {
+  if (allDMsSelected.value) {
+    emit('deselectAllDMs')
+  } else {
+    emit('selectAllDMs')
+  }
+}
 </script>
 
 <template>
@@ -75,10 +123,17 @@ const sortedDMChannels = computed(() => sortDMChannelsByLastMessage(props.dmChan
       <div
         class="sticky top-0 bg-surface-light/95 backdrop-blur-sm px-6 py-4 border-b border-surface-lighter z-10"
       >
-        <p class="text-text-secondary text-sm font-semibold">
-          <span class="text-cta">{{ dmChannels.length }}</span>
-          direct messages
-        </p>
+        <div class="flex items-center gap-3">
+          <Checkbox
+            :checked="allDMsSelected"
+            :indeterminate="someDMsSelected"
+            @change="toggleAllDMs"
+          />
+          <p class="text-text-secondary text-sm font-semibold">
+            <span class="text-cta">{{ dmChannels.length }}</span>
+            direct messages
+          </p>
+        </div>
       </div>
 
       <!-- DM Items -->
@@ -86,8 +141,14 @@ const sortedDMChannels = computed(() => sortDMChannelsByLastMessage(props.dmChan
         <div
           v-for="dm in sortedDMChannels"
           :key="dm.id"
-          class="group flex items-center gap-3 px-3 py-2.5 rounded-lg bg-surface-light/50 hover:bg-surface-lighter hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer"
+          class="group flex items-center gap-3 px-3 py-2.5 rounded-lg bg-surface-light/50 hover:bg-surface-lighter hover:shadow-md transition-all duration-200"
         >
+          <!-- Checkbox -->
+          <Checkbox
+            :checked="selectedDMIds.has(dm.id)"
+            @change="emit('toggleDM', dm.id)"
+          />
+
           <!-- DM Avatar -->
           <div
             class="w-10 h-10 rounded-full bg-background-lighter flex items-center justify-center overflow-hidden shrink-0"
@@ -132,10 +193,17 @@ const sortedDMChannels = computed(() => sortDMChannelsByLastMessage(props.dmChan
       <div
         class="sticky top-0 bg-surface-light/95 backdrop-blur-sm px-6 py-4 border-b border-surface-lighter z-10"
       >
-        <p class="text-text-secondary text-sm font-semibold">
-          <span class="text-cta">{{ channels.filter((ch) => ch.type !== 4).length }}</span>
-          channels found
-        </p>
+        <div class="flex items-center gap-3">
+          <Checkbox
+            :checked="allChannelsSelected"
+            :indeterminate="someChannelsSelected"
+            @change="toggleAllChannels"
+          />
+          <p class="text-text-secondary text-sm font-semibold">
+            <span class="text-cta">{{ channels.filter((ch) => ch.type !== 4).length }}</span>
+            channels found
+          </p>
+        </div>
       </div>
 
       <!-- Channel Groups -->
@@ -157,8 +225,14 @@ const sortedDMChannels = computed(() => sortDMChannelsByLastMessage(props.dmChan
             <div
               v-for="channel in channelsByCategory.grouped.get('uncategorized')"
               :key="channel.id"
-              class="group flex items-center gap-3 px-3 py-2.5 rounded-lg bg-surface-light/50 hover:bg-surface-lighter hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer"
+              class="group flex items-center gap-3 px-3 py-2.5 rounded-lg bg-surface-light/50 hover:bg-surface-lighter hover:shadow-md transition-all duration-200"
             >
+              <!-- Checkbox -->
+              <Checkbox
+                :checked="selectedChannelIds.has(channel.id)"
+                @change="emit('toggleChannel', channel.id)"
+              />
+
               <!-- Channel Icon -->
               <ChannelIcon :type="channel.type" class="shrink-0" />
 
@@ -204,8 +278,14 @@ const sortedDMChannels = computed(() => sortDMChannelsByLastMessage(props.dmChan
             <div
               v-for="channel in channelsByCategory.grouped.get(category.id)"
               :key="channel.id"
-              class="group flex items-center gap-3 px-3 py-2.5 rounded-lg bg-surface-light/50 hover:bg-surface-lighter hover:scale-[1.02] hover:shadow-md transition-all duration-200 cursor-pointer"
+              class="group flex items-center gap-3 px-3 py-2.5 rounded-lg bg-surface-light/50 hover:bg-surface-lighter hover:shadow-md transition-all duration-200"
             >
+              <!-- Checkbox -->
+              <Checkbox
+                :checked="selectedChannelIds.has(channel.id)"
+                @change="emit('toggleChannel', channel.id)"
+              />
+
               <!-- Channel Icon -->
               <ChannelIcon :type="channel.type" class="shrink-0" />
 

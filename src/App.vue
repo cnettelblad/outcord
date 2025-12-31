@@ -19,11 +19,21 @@ const toast = useToast()
 const showExportModal = ref(false)
 const exportContext = serverChannelsContext
 
+// Selection state
+const selectedChannelIds = ref(new Set<string>())
+const selectedDMIds = ref(new Set<string>())
+
 // Provide toast to all child components
 provide('toast', toast)
 
 const canExport = computed(() => {
   return discord.channels.value.length > 0 && discord.selectedGuildId.value !== null
+})
+
+// Clear selections when changing servers or switching to DM mode
+watch([() => discord.selectedGuildId.value, () => discord.isDMMode.value], () => {
+  selectedChannelIds.value.clear()
+  selectedDMIds.value.clear()
 })
 
 // Resize window based on auth state
@@ -58,6 +68,44 @@ function handleExport() {
 async function handleExportWithSettings(settings: ExportSettings) {
   showExportModal.value = false
   await discord.exportChannels(settings)
+}
+
+// Selection handlers
+function toggleChannel(id: string) {
+  if (selectedChannelIds.value.has(id)) {
+    selectedChannelIds.value.delete(id)
+  } else {
+    selectedChannelIds.value.add(id)
+  }
+  // Trigger reactivity
+  selectedChannelIds.value = new Set(selectedChannelIds.value)
+}
+
+function toggleDM(id: string) {
+  if (selectedDMIds.value.has(id)) {
+    selectedDMIds.value.delete(id)
+  } else {
+    selectedDMIds.value.add(id)
+  }
+  // Trigger reactivity
+  selectedDMIds.value = new Set(selectedDMIds.value)
+}
+
+function selectAllChannels() {
+  const selectableChannels = discord.channels.value.filter((ch) => ch.type !== 4)
+  selectedChannelIds.value = new Set(selectableChannels.map((ch) => ch.id))
+}
+
+function deselectAllChannels() {
+  selectedChannelIds.value = new Set()
+}
+
+function selectAllDMs() {
+  selectedDMIds.value = new Set(discord.dmChannels.value.map((dm) => dm.id))
+}
+
+function deselectAllDMs() {
+  selectedDMIds.value = new Set()
 }
 </script>
 
@@ -208,6 +256,14 @@ async function handleExportWithSettings(settings: ExportSettings) {
                 :dmChannels="discord.dmChannels.value"
                 :isDMMode="discord.isDMMode.value"
                 :isLoading="discord.isLoading.value"
+                :selectedChannelIds="selectedChannelIds"
+                :selectedDMIds="selectedDMIds"
+                @toggle-channel="toggleChannel"
+                @toggle-d-m="toggleDM"
+                @select-all-channels="selectAllChannels"
+                @deselect-all-channels="deselectAllChannels"
+                @select-all-d-ms="selectAllDMs"
+                @deselect-all-d-ms="deselectAllDMs"
               />
             </div>
           </div>
