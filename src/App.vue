@@ -178,16 +178,25 @@ async function handleExportWithSettings(settings: ExportSettings) {
                       {{ discord.authMethod.value === 'bot' ? 'Bot Account' : 'User Account' }}
                     </span>
                   </div>
-                </div>
 
-                <!-- Logout Button -->
-                <button
-                  type="button"
-                  class="px-4 py-2 rounded-lg font-semibold text-brand border-2 border-brand hover:bg-brand hover:text-white cursor-pointer transition-all duration-200"
-                  @click="discord.logout"
-                >
-                  Logout
-                </button>
+                  <!-- Logout Button -->
+                  <button
+                    type="button"
+                    class="px-2 py-2 rounded-sm font-semibold text-red-600 hover:bg-red-600 hover:text-white cursor-pointer transition-all duration-200"
+                    @click="discord.logout"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      class="size-5"
+                    >
+                      <path
+                        d="M17 7L15.59 8.41L18.17 11H8V13H18.17L15.59 15.58L17 17L22 12M4 5H12V3H4C2.9 3 2 3.9 2 5V19C2 20.1 2.9 21 4 21H12V19H4V5Z"
+                      />
+                    </svg>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
