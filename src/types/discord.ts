@@ -75,3 +75,31 @@ export interface PermissionExport {
   allow: string[]
   deny: string[]
 }
+
+export interface DiscordRole {
+  id: string
+  name: string
+  permissions: string
+  position: number
+  color?: number
+  hoist?: boolean
+  managed?: boolean
+}
+
+export interface GuildMember {
+  user: DiscordUser
+  roles: string[]
+  nick?: string | null
+  joined_at: string
+}
+
+export interface PermissionResolution {
+  allowed: boolean
+  basePermissions: bigint
+  roleAllow: bigint
+  roleDeny: bigint
+  memberAllow: bigint
+  memberDeny: bigint
+  finalPermissions: bigint
+  hasAdministrator: boolean
+}
