@@ -3,6 +3,8 @@ import type {
   DiscordGuild,
   DiscordChannel,
   DiscordDMChannel,
+  DiscordRole,
+  GuildMember,
 } from '../../src/types/discord.js'
 
 const DISCORD_API_BASE = 'https://discord.com/api/v10'
@@ -66,4 +68,20 @@ export async function fetchChannels(
 
 export async function fetchDMs(token: string, method: 'bot' | 'user'): Promise<DiscordDMChannel[]> {
   return makeDiscordRequest<DiscordDMChannel[]>('/users/@me/channels', token, method)
+}
+
+export async function fetchRoles(
+  guildId: string,
+  token: string,
+  method: 'bot' | 'user'
+): Promise<DiscordRole[]> {
+  return makeDiscordRequest<DiscordRole[]>(`/guilds/${guildId}/roles`, token, method)
+}
+
+export async function fetchCurrentMember(
+  guildId: string,
+  token: string,
+  method: 'bot' | 'user'
+): Promise<GuildMember> {
+  return makeDiscordRequest<GuildMember>(`/users/@me/guilds/${guildId}/member`, token, method)
 }
