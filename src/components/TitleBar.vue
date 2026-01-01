@@ -27,7 +27,7 @@ onMounted(async () => {
   <div class="titlebar bg-surface select-none">
     <!-- Draggable region (left side with logo) -->
     <div class="draggable flex items-center gap-3 px-4 py-2 flex-1">
-      <img src="../../public/logo.svg" alt="OutCord Logo" class="w-5 h-5" />
+      <img src="/logo.svg" alt="OutCord Logo" class="w-5 h-5" />
       <span class="text-sm font-medium text-text-secondary">OutCord v{{ version }}</span>
     </div>
 
