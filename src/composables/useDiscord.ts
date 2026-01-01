@@ -1,6 +1,6 @@
 import { ref, onMounted, inject } from 'vue'
 import type { AuthMethod } from '../types/app'
-import type { DiscordGuild, DiscordChannel } from '../types/discord'
+import type { DiscordGuild, DiscordChannel, DiscordRole, GuildMember } from '../types/discord'
 import type { ExportSettings } from '../components/ExportModal.vue'
 import type { DiscordUser, DiscordDMChannel } from '../vite-env'
 import { buildExportData } from '../utils/discord-api'
@@ -18,6 +18,8 @@ export function useDiscord() {
   const selectedGuild = ref<DiscordGuild | null>(null)
   const guilds = ref<DiscordGuild[]>([])
   const channels = ref<DiscordChannel[]>([])
+  const roles = ref<DiscordRole[]>([])
+  const currentMember = ref<GuildMember | null>(null)
 
   const isDMMode = ref(false)
   const dmChannels = ref<DiscordDMChannel[]>([])
@@ -83,11 +85,20 @@ export function useDiscord() {
       selectedGuildId.value = guildId
       selectedGuild.value = guilds.value.find((g) => g.id === guildId) || null
 
-      const fetchedChannels = await window.electronAPI?.fetchChannels(guildId)
+      const [fetchedChannels, fetchedRoles, fetchedMember] = await Promise.all([
+        window.electronAPI?.fetchChannels(guildId),
+        window.electronAPI?.fetchRoles(guildId),
+        window.electronAPI?.fetchCurrentMember(guildId),
+      ])
+
       channels.value = fetchedChannels || []
+      roles.value = fetchedRoles || []
+      currentMember.value = fetchedMember || null
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to load channels'
       channels.value = []
+      roles.value = []
+      currentMember.value = null
     } finally {
       isLoading.value = false
     }
@@ -109,6 +120,8 @@ export function useDiscord() {
       selectedGuildId.value = null
       selectedGuild.value = null
       channels.value = []
+      roles.value = []
+      currentMember.value = null
 
       const fetchedDMs = await window.electronAPI?.fetchDMs()
       dmChannels.value = fetchedDMs || []
@@ -183,6 +196,8 @@ export function useDiscord() {
     selectedGuild.value = null
     guilds.value = []
     channels.value = []
+    roles.value = []
+    currentMember.value = null
     isDMMode.value = false
     dmChannels.value = []
     error.value = null
@@ -221,6 +236,8 @@ export function useDiscord() {
     selectedGuild,
     guilds,
     channels,
+    roles,
+    currentMember,
     isDMMode,
     dmChannels,
     isLoading,
