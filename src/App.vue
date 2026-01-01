@@ -254,6 +254,9 @@ function deselectAllDMs() {
               <ChannelList
                 :channels="discord.channels.value"
                 :dmChannels="discord.dmChannels.value"
+                :roles="discord.roles.value"
+                :currentMember="discord.currentMember.value"
+                :guildId="discord.selectedGuildId.value"
                 :isDMMode="discord.isDMMode.value"
                 :isLoading="discord.isLoading.value"
                 :selectedChannelIds="selectedChannelIds"

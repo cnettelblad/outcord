@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { DiscordChannel } from '../types/discord'
+import type { DiscordChannel, DiscordRole, GuildMember } from '../types/discord'
 import type { DiscordDMChannel } from '../vite-env'
 import { channelTypeToString } from '../utils/discord-api'
 import { getDMChannelAvatarUrl } from '../utils/discord-urls'
@@ -10,12 +10,16 @@ import {
   groupChannelsByCategory,
   sortDMChannelsByLastMessage,
 } from '../utils/discord/channel-grouping'
+import { canReadChannel } from '../utils/permissions'
 import ChannelIcon from './ChannelIcon.vue'
 import Checkbox from './Checkbox.vue'
 
 const props = defineProps<{
   channels: DiscordChannel[]
   dmChannels: DiscordDMChannel[]
+  roles: DiscordRole[]
+  currentMember: GuildMember | null
+  guildId: string | null
   isDMMode: boolean
   isLoading: boolean
   selectedChannelIds: Set<string>
@@ -36,6 +40,18 @@ const channelsByCategory = computed(() => groupChannelsByCategory(props.channels
 const sortedDMChannels = computed(() => sortDMChannelsByLastMessage(props.dmChannels))
 
 const selectableChannels = computed(() => props.channels.filter((ch) => ch.type !== 4))
+
+function checkChannelAccess(channel: DiscordChannel): boolean {
+  if (!props.currentMember || !props.guildId || props.roles.length === 0) {
+    return true
+  }
+
+  try {
+    return canReadChannel(props.currentMember, channel, props.roles, props.channels, props.guildId)
+  } catch {
+    return true
+  }
+}
 
 const allChannelsSelected = computed(() => {
   if (selectableChannels.value.length === 0) return false
@@ -257,6 +273,14 @@ function toggleAllDMs() {
               >
                 NSFW
               </span>
+
+              <!-- No Access Badge -->
+              <span
+                v-if="!checkChannelAccess(channel)"
+                class="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-md bg-yellow-600 text-white"
+              >
+                No access
+              </span>
             </div>
           </div>
         </div>
@@ -309,6 +333,14 @@ function toggleAllDMs() {
                 class="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-md bg-accent-red text-white"
               >
                 NSFW
+              </span>
+
+              <!-- No Access Badge -->
+              <span
+                v-if="!checkChannelAccess(channel)"
+                class="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-md bg-yellow-600 text-white"
+              >
+                No access
               </span>
             </div>
           </div>
