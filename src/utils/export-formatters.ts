@@ -1,4 +1,4 @@
-import type { ExportedChannelData, ChannelExport } from '../types/discord'
+import type { ExportedChannelData, ChannelExport, ExportedThreadData, ForumThreadExport } from '../types/discord'
 import type { ExportFormat } from '../components/ExportModal.vue'
 
 export function formatExportData(
@@ -169,4 +169,101 @@ function formatValueForCSV(value: unknown): string {
     return JSON.stringify(value)
   }
   return String(value)
+}
+
+export function formatThreadExportData(
+  data: ExportedThreadData,
+  format: ExportFormat
+): { content: string; extension: string } {
+  switch (format) {
+    case 'json':
+      return {
+        content: JSON.stringify(data, null, 2),
+        extension: 'json',
+      }
+    case 'csv':
+      return {
+        content: formatThreadsAsCSV(data),
+        extension: 'csv',
+      }
+    case 'markdown':
+      return {
+        content: formatThreadsAsMarkdown(data),
+        extension: 'md',
+      }
+    default:
+      return {
+        content: JSON.stringify(data, null, 2),
+        extension: 'json',
+      }
+  }
+}
+
+function formatThreadsAsCSV(data: ExportedThreadData): string {
+  if (data.threads.length === 0) {
+    return 'No threads to export'
+  }
+
+  const allKeys = new Set<string>()
+  data.threads.forEach((thread) => {
+    Object.keys(thread).forEach((key) => allKeys.add(key))
+  })
+
+  const headers = Array.from(allKeys)
+  const csvRows: string[] = []
+
+  csvRows.push(headers.map((h) => escapeCSV(h)).join(','))
+
+  data.threads.forEach((thread) => {
+    const row = headers.map((header) => {
+      const value = (thread as unknown as Record<string, unknown>)[header]
+      return escapeCSV(formatValueForCSV(value))
+    })
+    csvRows.push(row.join(','))
+  })
+
+  return csvRows.join('\n')
+}
+
+function formatThreadsAsMarkdown(data: ExportedThreadData): string {
+  const lines: string[] = []
+
+  lines.push(`# Forum Threads: ${data.metadata.channelName}`)
+  lines.push('')
+  lines.push(`**Server:** ${data.metadata.guildName}`)
+  lines.push(`**Export Date:** ${new Date(data.metadata.exportDate).toLocaleString()}`)
+  lines.push(`**Channel ID:** ${data.metadata.channelId}`)
+  lines.push(`**Total Threads:** ${data.metadata.totalThreads}`)
+  lines.push('')
+
+  lines.push('## Threads')
+  lines.push('')
+
+  if (data.threads.length === 0) {
+    lines.push('*No threads found*')
+  } else {
+    lines.push('| Name | Author | Created | Messages | Tags | Status |')
+    lines.push('|------|--------|---------|----------|------|--------|')
+
+    data.threads.forEach((thread) => {
+      lines.push(formatThreadAsMarkdownRow(thread))
+    })
+  }
+
+  return lines.join('\n')
+}
+
+function formatThreadAsMarkdownRow(thread: ForumThreadExport): string {
+  const name = thread.threadName || 'Untitled'
+  const author = thread.authorId || 'Unknown'
+  const created = thread.createdAt ? new Date(thread.createdAt).toLocaleDateString() : 'N/A'
+  const messages = thread.messageCount || 0
+  const tags = Array.isArray(thread.tags) && thread.tags.length > 0 ? thread.tags.join(', ') : 'None'
+
+  const statusParts: string[] = []
+  if (thread.archived) statusParts.push('Archived')
+  if (thread.locked) statusParts.push('Locked')
+  const status = statusParts.length > 0 ? statusParts.join(', ') : 'Active'
+
+  return `| ${name} | ${author} | ${created} | ${messages} | ${tags} | ${status} |`
 }
