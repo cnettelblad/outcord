@@ -103,3 +103,45 @@ export interface PermissionResolution {
   finalPermissions: bigint
   hasAdministrator: boolean
 }
+
+export interface ThreadMetadata {
+  archived: boolean
+  auto_archive_duration: number
+  archive_timestamp: string | null
+  locked: boolean
+  create_timestamp: string | null
+}
+
+export interface ForumThread {
+  id: string
+  name: string
+  type: 10 | 11 | 12
+  owner_id: string
+  message_count: number
+  member_count: number
+  thread_metadata: ThreadMetadata
+  applied_tags?: string[]
+}
+
+export interface ForumThreadExport {
+  threadId: string
+  threadName: string
+  authorId: string
+  createdAt: string
+  messageCount: number
+  tags: string[]
+  archived: boolean
+  locked: boolean
+}
+
+export interface ExportedThreadData {
+  metadata: {
+    channelId: string
+    channelName: string
+    guildId: string
+    guildName: string
+    exportDate: string
+    totalThreads: number
+  }
+  threads: ForumThreadExport[]
+}
