@@ -5,6 +5,7 @@ import type {
   DiscordDMChannel,
   DiscordRole,
   GuildMember,
+  ForumThread,
 } from '../../src/types/discord.js'
 
 const DISCORD_API_BASE = 'https://discord.com/api/v10'
@@ -84,4 +85,73 @@ export async function fetchCurrentMember(
   method: 'bot' | 'user'
 ): Promise<GuildMember> {
   return makeDiscordRequest<GuildMember>(`/users/@me/guilds/${guildId}/member`, token, method)
+}
+
+export async function fetchAllForumThreads(
+  channelId: string,
+  token: string,
+  method: 'bot' | 'user'
+): Promise<ForumThread[]> {
+  const allThreads: ForumThread[] = []
+  const seenIds = new Set<string>()
+
+  try {
+    // Fetch active threads
+    const activeResponse = await makeDiscordRequest<{ threads: ForumThread[] }>(
+      `/channels/${channelId}/threads/active`,
+      token,
+      method
+    )
+    if (activeResponse.threads) {
+      activeResponse.threads.forEach((thread) => {
+        if (!seenIds.has(thread.id)) {
+          allThreads.push(thread)
+          seenIds.add(thread.id)
+        }
+      })
+    }
+  } catch (error) {
+    console.error('Error fetching active threads:', error)
+  }
+
+  try {
+    // Fetch archived public threads
+    const archivedPublicResponse = await makeDiscordRequest<{ threads: ForumThread[] }>(
+      `/channels/${channelId}/threads/archived/public`,
+      token,
+      method
+    )
+    if (archivedPublicResponse.threads) {
+      archivedPublicResponse.threads.forEach((thread) => {
+        if (!seenIds.has(thread.id)) {
+          allThreads.push(thread)
+          seenIds.add(thread.id)
+        }
+      })
+    }
+  } catch (error) {
+    console.error('Error fetching archived public threads:', error)
+  }
+
+  try {
+    // Fetch archived private threads (may fail if no permissions)
+    const archivedPrivateResponse = await makeDiscordRequest<{ threads: ForumThread[] }>(
+      `/channels/${channelId}/threads/archived/private`,
+      token,
+      method
+    )
+    if (archivedPrivateResponse.threads) {
+      archivedPrivateResponse.threads.forEach((thread) => {
+        if (!seenIds.has(thread.id)) {
+          allThreads.push(thread)
+          seenIds.add(thread.id)
+        }
+      })
+    }
+  } catch (error) {
+    // Silently fail for private archived threads (permission denied is expected)
+    console.warn('Could not fetch archived private threads (may lack permissions):', error)
+  }
+
+  return allThreads
 }
