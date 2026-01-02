@@ -22,6 +22,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   fetchRoles: (guildId: string) => ipcRenderer.invoke('discord:fetch-roles', guildId),
   fetchCurrentMember: (guildId: string) =>
     ipcRenderer.invoke('discord:fetch-current-member', guildId),
+  fetchForumThreads: (channelId: string) =>
+    ipcRenderer.invoke('discord:fetch-forum-threads', channelId),
 
   // Export
   exportChannels: (params: { content: string; extension: string; filename: string }) =>

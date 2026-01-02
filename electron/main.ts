@@ -132,6 +132,13 @@ ipcMain.handle('discord:fetch-current-member', async (_event, guildId: string) =
   return discordService.fetchCurrentMember(guildId, auth.token, auth.method)
 })
 
+ipcMain.handle('discord:fetch-forum-threads', async (_event, channelId: string) => {
+  const auth = storageService.getToken()
+  if (!auth) throw new Error('Not authenticated')
+
+  return discordService.fetchAllForumThreads(channelId, auth.token, auth.method)
+})
+
 // Export handlers
 ipcMain.handle('export:channels', async (_event, exportParams: unknown) => {
   const params = exportParams as { content: string; extension: string; filename: string }
