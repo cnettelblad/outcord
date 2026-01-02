@@ -26,6 +26,8 @@ export function useDiscord() {
 
   const isLoading = ref(false)
   const error = ref<string | null>(null)
+  const threadFetchProgress = ref<number>(0)
+  const isExportingThreads = ref(false)
 
   async function authenticate(token: string, method: AuthMethod): Promise<boolean> {
     try {
@@ -198,9 +200,19 @@ export function useDiscord() {
     try {
       error.value = null
       isLoading.value = true
+      isExportingThreads.value = true
+      threadFetchProgress.value = 0
+
+      // Set up progress listener
+      window.electronAPI?.onThreadFetchProgress((count: number) => {
+        threadFetchProgress.value = count
+      })
 
       // Fetch threads from forum channel
       const threads = await window.electronAPI?.fetchForumThreads(channelId)
+
+      // Clean up progress listener
+      window.electronAPI?.removeThreadFetchProgressListener()
 
       if (!threads || threads.length === 0) {
         toast?.info('No threads found in this forum channel')
@@ -244,6 +256,9 @@ export function useDiscord() {
       toast?.error(error.value)
     } finally {
       isLoading.value = false
+      isExportingThreads.value = false
+      threadFetchProgress.value = 0
+      window.electronAPI?.removeThreadFetchProgressListener()
     }
   }
 
@@ -304,6 +319,8 @@ export function useDiscord() {
     dmChannels,
     isLoading,
     error,
+    threadFetchProgress,
+    isExportingThreads,
 
     // Actions
     authenticate,

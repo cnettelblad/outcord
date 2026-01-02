@@ -24,6 +24,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.invoke('discord:fetch-current-member', guildId),
   fetchForumThreads: (channelId: string) =>
     ipcRenderer.invoke('discord:fetch-forum-threads', channelId),
+  onThreadFetchProgress: (callback: (count: number) => void) => {
+    ipcRenderer.on('discord:thread-fetch-progress', (_event, count) => callback(count))
+  },
+  removeThreadFetchProgressListener: () => {
+    ipcRenderer.removeAllListeners('discord:thread-fetch-progress')
+  },
 
   // Export
   exportChannels: (params: { content: string; extension: string; filename: string }) =>

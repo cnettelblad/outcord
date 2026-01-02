@@ -190,7 +190,8 @@ export function formatThreadForExport(thread: ForumThread): ForumThreadExport {
     threadId: thread.id,
     threadName: thread.name,
     authorId: thread.owner_id,
-    createdAt: thread.thread_metadata.create_timestamp || snowflakeToDate(thread.id)?.toISOString() || '',
+    createdAt:
+      thread.thread_metadata.create_timestamp || snowflakeToDate(thread.id)?.toISOString() || '',
     messageCount: thread.message_count,
     tags: thread.applied_tags || [],
     archived: thread.thread_metadata.archived,
@@ -206,6 +207,8 @@ export function buildThreadExportData(
   threads: ForumThread[],
   selectedFields?: string[]
 ): ExportedThreadData {
+  console.log(`[Thread Export] Building export data for ${threads.length} threads`)
+
   const fieldMapping: Record<string, string> = {
     threadId: 'threadId',
     threadName: 'threadName',
@@ -233,9 +236,29 @@ export function buildThreadExportData(
     return filtered as ForumThreadExport
   }
 
-  const exportedThreads = threads
-    .map((thread) => formatThreadForExport(thread))
-    .map((thread) => filterFields(thread))
+  const exportedThreads: ForumThreadExport[] = []
+  let successCount = 0
+  let failCount = 0
+
+  threads.forEach((thread, index) => {
+    try {
+      const formatted = formatThreadForExport(thread)
+      const filtered = filterFields(formatted)
+      exportedThreads.push(filtered)
+      successCount++
+      console.log(`  [Export ${index + 1}/${threads.length}] ✓ "${thread.name}" (ID: ${thread.id})`)
+    } catch (error) {
+      failCount++
+      console.error(
+        `  [Export ${index + 1}/${threads.length}] ✗ FAILED to export thread: "${thread.name}" (ID: ${thread.id})`,
+        error
+      )
+    }
+  })
+
+  console.log(
+    `[Thread Export] Export complete: ${successCount} succeeded, ${failCount} failed, ${exportedThreads.length} total`
+  )
 
   return {
     metadata: {

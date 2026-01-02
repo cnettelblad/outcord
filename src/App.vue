@@ -277,6 +277,8 @@ async function handleExportThreadsWithSettings(settings: ExportSettings) {
                 :guildId="discord.selectedGuildId.value"
                 :isDMMode="discord.isDMMode.value"
                 :isLoading="discord.isLoading.value"
+                :isExportingThreads="discord.isExportingThreads.value"
+                :threadFetchProgress="discord.threadFetchProgress.value"
                 :selectedChannelIds="selectedChannelIds"
                 :selectedDMIds="selectedDMIds"
                 @toggle-channel="toggleChannel"

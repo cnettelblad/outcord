@@ -1,4 +1,9 @@
-import type { ExportedChannelData, ChannelExport, ExportedThreadData, ForumThreadExport } from '../types/discord'
+import type {
+  ExportedChannelData,
+  ChannelExport,
+  ExportedThreadData,
+  ForumThreadExport,
+} from '../types/discord'
 import type { ExportFormat } from '../components/ExportModal.vue'
 
 export function formatExportData(
@@ -258,7 +263,8 @@ function formatThreadAsMarkdownRow(thread: ForumThreadExport): string {
   const author = thread.authorId || 'Unknown'
   const created = thread.createdAt ? new Date(thread.createdAt).toLocaleDateString() : 'N/A'
   const messages = thread.messageCount || 0
-  const tags = Array.isArray(thread.tags) && thread.tags.length > 0 ? thread.tags.join(', ') : 'None'
+  const tags =
+    Array.isArray(thread.tags) && thread.tags.length > 0 ? thread.tags.join(', ') : 'None'
 
   const statusParts: string[] = []
   if (thread.archived) statusParts.push('Archived')

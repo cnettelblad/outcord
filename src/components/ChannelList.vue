@@ -22,6 +22,8 @@ const props = defineProps<{
   guildId: string | null
   isDMMode: boolean
   isLoading: boolean
+  isExportingThreads: boolean
+  threadFetchProgress: number
   selectedChannelIds: Set<string>
   selectedDMIds: Set<string>
 }>()
@@ -60,7 +62,10 @@ const allChannelsSelected = computed(() => {
 })
 
 const someChannelsSelected = computed(() => {
-  return selectableChannels.value.some((ch) => props.selectedChannelIds.has(ch.id)) && !allChannelsSelected.value
+  return (
+    selectableChannels.value.some((ch) => props.selectedChannelIds.has(ch.id)) &&
+    !allChannelsSelected.value
+  )
 })
 
 const allDMsSelected = computed(() => {
@@ -99,7 +104,13 @@ function toggleAllDMs() {
         <div
           class="inline-block w-12 h-12 border-4 border-brand border-t-transparent rounded-full animate-spin mb-4"
         ></div>
-        <p class="text-text-secondary animate-pulse">Loading channels...</p>
+        <p class="text-text-secondary animate-pulse">
+          {{
+            isExportingThreads
+              ? `Fetching forum threads... (${threadFetchProgress} fetched)`
+              : 'Loading channels...'
+          }}
+        </p>
       </div>
     </div>
 
@@ -161,10 +172,7 @@ function toggleAllDMs() {
           class="group flex items-center gap-3 px-3 py-2.5 rounded-lg bg-surface-light/50 hover:bg-surface-lighter hover:shadow-md transition-all duration-200"
         >
           <!-- Checkbox -->
-          <Checkbox
-            :checked="selectedDMIds.has(dm.id)"
-            @change="emit('toggleDM', dm.id)"
-          />
+          <Checkbox :checked="selectedDMIds.has(dm.id)" @change="emit('toggleDM', dm.id)" />
 
           <!-- DM Avatar -->
           <div
