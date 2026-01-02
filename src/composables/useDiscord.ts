@@ -3,8 +3,8 @@ import type { AuthMethod } from '../types/app'
 import type { DiscordGuild, DiscordChannel, DiscordRole, GuildMember } from '../types/discord'
 import type { ExportSettings } from '../components/ExportModal.vue'
 import type { DiscordUser, DiscordDMChannel } from '../vite-env'
-import { buildExportData } from '../utils/discord-api'
-import { formatExportData } from '../utils/export-formatters'
+import { buildExportData, buildThreadExportData } from '../utils/discord-api'
+import { formatExportData, formatThreadExportData } from '../utils/export-formatters'
 import type { useToast } from './useToast'
 
 export function useDiscord() {
@@ -185,6 +185,68 @@ export function useDiscord() {
     }
   }
 
+  async function exportForumThreads(
+    channelId: string,
+    channelName: string,
+    settings: ExportSettings
+  ): Promise<void> {
+    if (!selectedGuild.value) {
+      error.value = 'No server selected'
+      return
+    }
+
+    try {
+      error.value = null
+      isLoading.value = true
+
+      // Fetch threads from forum channel
+      const threads = await window.electronAPI?.fetchForumThreads(channelId)
+
+      if (!threads || threads.length === 0) {
+        toast?.info('No threads found in this forum channel')
+        return
+      }
+
+      // Build export data with selected fields
+      const exportData = buildThreadExportData(
+        channelId,
+        channelName,
+        selectedGuild.value.id,
+        selectedGuild.value.name,
+        threads,
+        settings.selectedFields
+      )
+
+      // Format data according to selected format
+      const { content, extension } = formatThreadExportData(exportData, settings.format)
+
+      // Generate filename
+      const date = new Date().toISOString().split('T')[0]
+      const safeChannelName = channelName.replace(/[^a-z0-9]/gi, '_')
+      const filename = `${safeChannelName}_threads_${date}.${extension}`
+
+      // Export to file
+      const filePath = await window.electronAPI?.exportChannels({
+        content,
+        extension,
+        filename,
+      })
+
+      if (filePath) {
+        toast?.success(`Threads exported successfully to: ${filePath}`)
+      }
+    } catch (err) {
+      if (err instanceof Error && err.message.includes('canceled')) {
+        // User canceled export, don't show error
+        return
+      }
+      error.value = err instanceof Error ? err.message : 'Thread export failed'
+      toast?.error(error.value)
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   async function logout(): Promise<void> {
     await window.electronAPI?.clearToken()
 
@@ -249,6 +311,7 @@ export function useDiscord() {
     loadChannels,
     loadDMs,
     exportChannels,
+    exportForumThreads,
     logout,
   }
 }
