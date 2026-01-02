@@ -10,14 +10,16 @@ import ExportButton from './components/ExportButton.vue'
 import ExportModal, { type ExportSettings } from './components/ExportModal.vue'
 import Toast from './components/Toast.vue'
 import type { AuthMethod } from './types/app'
-import { serverChannelsContext } from './utils/export-contexts'
+import { serverChannelsContext, forumChannelContext } from './utils/export-contexts'
 import { getAvatarUrl } from './utils/discord-urls'
 import { getDisplayName } from './utils/formatters/user-formatters'
 
 const discord = useDiscord()
 const toast = useToast()
 const showExportModal = ref(false)
+const showThreadExportModal = ref(false)
 const exportContext = serverChannelsContext
+const selectedForumChannel = ref<{ id: string; name: string } | null>(null)
 
 // Selection state
 const selectedChannelIds = ref(new Set<string>())
@@ -106,6 +108,22 @@ function selectAllDMs() {
 
 function deselectAllDMs() {
   selectedDMIds.value = new Set()
+}
+
+function handleForumExport(channelId: string, channelName: string) {
+  selectedForumChannel.value = { id: channelId, name: channelName }
+  showThreadExportModal.value = true
+}
+
+async function handleExportThreadsWithSettings(settings: ExportSettings) {
+  showThreadExportModal.value = false
+  if (!selectedForumChannel.value) return
+
+  await discord.exportForumThreads(
+    selectedForumChannel.value.id,
+    selectedForumChannel.value.name,
+    settings
+  )
 }
 </script>
 
@@ -267,6 +285,7 @@ function deselectAllDMs() {
                 @deselect-all-channels="deselectAllChannels"
                 @select-all-d-ms="selectAllDMs"
                 @deselect-all-d-ms="deselectAllDMs"
+                @export-forum-threads="handleForumExport"
               />
             </div>
           </div>
@@ -292,12 +311,18 @@ function deselectAllDMs() {
           </div>
         </footer>
 
-        <!-- Export Modal -->
+        <!-- Export Modals -->
         <ExportModal
           :is-open="showExportModal"
           :context="exportContext"
           @close="showExportModal = false"
           @export="handleExportWithSettings"
+        />
+        <ExportModal
+          :is-open="showThreadExportModal"
+          :context="forumChannelContext"
+          @close="showThreadExportModal = false"
+          @export="handleExportThreadsWithSettings"
         />
       </div>
     </Transition>
