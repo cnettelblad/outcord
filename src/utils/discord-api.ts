@@ -6,6 +6,9 @@ import type {
   PermissionOverwrite,
   ExportedChannelData,
   ChannelType,
+  ForumThread,
+  ForumThreadExport,
+  ExportedThreadData,
 } from '../types/discord'
 import { snowflakeToDate } from './discord-utils'
 
@@ -179,5 +182,70 @@ export function buildExportData(
       totalChannels: exportedChannels.length,
     },
     channels: exportedChannels,
+  }
+}
+
+export function formatThreadForExport(thread: ForumThread): ForumThreadExport {
+  return {
+    threadId: thread.id,
+    threadName: thread.name,
+    authorId: thread.owner_id,
+    createdAt: thread.thread_metadata.create_timestamp || snowflakeToDate(thread.id)?.toISOString() || '',
+    messageCount: thread.message_count,
+    tags: thread.applied_tags || [],
+    archived: thread.thread_metadata.archived,
+    locked: thread.thread_metadata.locked,
+  }
+}
+
+export function buildThreadExportData(
+  channelId: string,
+  channelName: string,
+  guildId: string,
+  guildName: string,
+  threads: ForumThread[],
+  selectedFields?: string[]
+): ExportedThreadData {
+  const fieldMapping: Record<string, string> = {
+    threadId: 'threadId',
+    threadName: 'threadName',
+    authorId: 'authorId',
+    createdAt: 'createdAt',
+    messageCount: 'messageCount',
+    tags: 'tags',
+    archived: 'archived',
+    locked: 'locked',
+  }
+
+  const fieldsToInclude = selectedFields
+    ? new Set(selectedFields.map((f) => fieldMapping[f] || f))
+    : null
+
+  const filterFields = (data: ForumThreadExport): ForumThreadExport => {
+    if (!fieldsToInclude) return data
+
+    const filtered: Record<string, unknown> = {}
+    Object.entries(data).forEach(([key, value]) => {
+      if (fieldsToInclude.has(key)) {
+        filtered[key] = value
+      }
+    })
+    return filtered as ForumThreadExport
+  }
+
+  const exportedThreads = threads
+    .map((thread) => formatThreadForExport(thread))
+    .map((thread) => filterFields(thread))
+
+  return {
+    metadata: {
+      channelId,
+      channelName,
+      guildId,
+      guildName,
+      exportDate: new Date().toISOString(),
+      totalThreads: exportedThreads.length,
+    },
+    threads: exportedThreads,
   }
 }
